@@ -1,0 +1,8 @@
+# Smoke group: the fastest possible end-to-end check. Runs entirely offline against the
+# in-repo `smoke` fixture — never use this group's scores as evidence of financial capability,
+# it exists to prove the pipeline itself works (CLI, engine, cache, metrics, artifacts).
+name: smoke
+benchmarks:
+  - name: smoke
+    split: dev
+    weight: 1.0

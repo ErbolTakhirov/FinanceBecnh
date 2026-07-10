@@ -1,0 +1,15 @@
+# The deterministic offline mock provider — no network, no API key, no GPU.
+# `model` selects a profile: echo-gold (happy path), formatting-noise, always-wrong, refuse,
+# error, timeout. See src/financebench/models/mock.py for what each one exercises.
+provider: mock
+model: echo-gold
+
+generation:
+  temperature: 0
+  max_output_tokens: 256
+  timeout_seconds: 30
+
+runtime:
+  concurrency: 4
+  retries: 2
+  cache: true

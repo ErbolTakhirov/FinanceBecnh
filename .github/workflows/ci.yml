@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Known limitation (see project README / final report): GitHub Actions may be unavailable on
+# this account due to an account-level billing restriction observed on a sibling project. This
+# workflow is written to the same standard as any other CI config and passes locally
+# (`ruff check . && ruff format --check . && mypy && pytest -q`), but live execution on GitHub
+# has not been verified from this environment.
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install (base + dev extras only — no GPU/paid-API deps)
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff check)
+        run: ruff check .
+
+      - name: Format check (ruff format)
+        run: ruff format --check .
+
+      - name: Type check (mypy, strict)
+        run: mypy
+
+      - name: Unit + integration tests
+        run: pytest -q
+
+      - name: CLI smoke acceptance (offline, mock provider only)
+        run: |
+          python -m financebench.cli doctor
+          python -m financebench.cli list-benchmarks
+          python -m financebench.cli licenses
+          python -m financebench.cli validate-dataset smoke
+          python -m financebench.cli eval --group smoke --model-config configs/models/mock.yaml --output-dir runs
+          python -m financebench.cli leaderboard --runs-dir runs --output reports
+
+      - name: Build package (sdist + wheel)
+        run: |
+          pip install build
+          python -m build
+
+      - name: Secret scan (no real-looking API keys committed)
+        run: python scripts/secret_scan_repo.py
+
+  no-live-calls-in-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm no FINANCEBENCH_LIVE usage in workflows other than nightly
+        run: |
+          if grep -rl "FINANCEBENCH_LIVE" .github/workflows/ci.yml .github/workflows/docs.yml 2>/dev/null; then
+            echo "Live-provider env var referenced outside nightly.yml — CI must stay offline/keyless."
+            exit 1
+          fi
+          echo "OK: ordinary CI never references FINANCEBENCH_LIVE."

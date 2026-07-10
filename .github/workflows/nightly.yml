@@ -1,0 +1,51 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+# Optional, secret-gated. Ordinary CI (ci.yml) never requires this workflow or any paid API key.
+# This job's "live provider" step is currently a no-op: only the `mock` provider is registered in
+# this release (Milestone 1). It becomes real as Milestone 5 lands OpenAI/Anthropic/Gemini/
+# OpenRouter/OpenAI-compatible providers — the gating and secret plumbing below is already
+# correct for that, so no workflow rewrite will be needed then, only new steps.
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    if: ${{ vars.FINANCEBENCH_LIVE == '1' }}
+    env:
+      FINANCEBENCH_LIVE: "1"
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Offline acceptance bar (always runs, needs no keys)
+        run: |
+          python -m financebench.cli doctor
+          python -m financebench.cli eval --group smoke --model-config configs/models/mock.yaml --output-dir runs
+
+      - name: Live provider evaluation
+        run: |
+          echo "No real (non-mock) provider is registered yet (Milestone 5 adds these)."
+          echo "This step will run: financebench eval --group core_public --model-config <real-provider-config> --output-dir runs --max-samples 20"
+
+      - name: Upload run artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-runs-${{ github.run_id }}
+          path: |
+            runs/
+            reports/
+          if-no-files-found: warn

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets — never commit real keys
+.env
+.env.*
+!.env.example
+
+# Benchmark run artifacts and reports (regenerated; keep them out of git)
+runs/
+reports/
+*.parquet
+*.duckdb
+
+# Response cache (large, regenerated, may contain provider output we don't want to redistribute)
+.cache/
+cache/responses/
+
+# Downloaded/prepared datasets (fetched by `financebench prepare`, never committed)
+data/downloads/
+data/prepared/
+data/**/raw/
+
+# Large model weights / multimodal assets (never bundled; loaded at runtime)
+*.gguf
+*.safetensors
+*.bin
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp

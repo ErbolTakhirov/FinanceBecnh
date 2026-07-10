@@ -1,0 +1,148 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "financebench"
+version = "0.1.0-alpha"
+description = "An open, reproducible benchmark platform for evaluating the financial capabilities of LLMs."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "FinanceBecnh contributors" }]
+keywords = [
+    "llm",
+    "benchmark",
+    "evaluation",
+    "finance",
+    "financial-analysis",
+    "rag",
+    "agents",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "typer>=0.12",
+    "pydantic>=2.6",
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "rich>=13.0",
+    "orjson>=3.10",
+]
+
+[project.optional-dependencies]
+# Heavy/optional backends — the core run/score loop never needs any of these.
+local-transformers = ["torch>=2.2", "transformers>=4.40", "accelerate>=0.30"]
+vllm = ["vllm>=0.5"]
+multimodal = ["pillow>=10.0"]
+export = ["polars>=1.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "types-pyyaml>=6.0",
+]
+
+[project.scripts]
+financebench = "financebench.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/ErbolTakhirov/FinanceBecnh"
+Documentation = "https://github.com/ErbolTakhirov/FinanceBecnh/tree/main/docs"
+Repository = "https://github.com/ErbolTakhirov/FinanceBecnh"
+Issues = "https://github.com/ErbolTakhirov/FinanceBecnh/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/financebench"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/financebench",
+    "configs",
+    "scripts",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+]
+
+# ---------------------------------------------------------------------------
+# Tooling configuration
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = ["runs", "reports", "data"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "SIM",    # flake8-simplify
+    "C4",     # flake8-comprehensions
+    "ASYNC",  # flake8-async
+    "PTH",    # flake8-use-pathlib
+    "TID",    # flake8-tidy-imports
+    "RUF",    # ruff-specific rules
+]
+# E501 (line length) is handled by the formatter; long string literals are allowed.
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["financebench"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Typer's Option/Argument are the idiomatic way to declare CLI params in defaults.
+extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra"
+asyncio_mode = "auto"
+filterwarnings = ["error"]
+markers = [
+    "live: makes real network calls; skipped unless FINANCEBENCH_LIVE=1",
+]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/financebench"]
+strict = true
+warn_unreachable = true
+warn_unused_ignores = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["polars.*", "vllm.*", "transformers.*", "torch.*"]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.coverage.run]
+source = ["src/financebench"]
+omit = ["*/tests/*"]
