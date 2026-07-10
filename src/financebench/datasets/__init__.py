@@ -7,6 +7,7 @@ a specific adapter module) so the registry is always fully populated.
 
 from __future__ import annotations
 
+from financebench.datasets import finqa as _finqa  # noqa: F401  (import registers "finqa")
 from financebench.datasets import smoke as _smoke  # noqa: F401  (import registers "smoke")
 from financebench.datasets.base import (
     DatasetAdapter,
@@ -15,10 +16,12 @@ from financebench.datasets.base import (
     get_dataset_class,
     register_dataset,
 )
+from financebench.datasets.finqa import FinQAAdapter
 from financebench.datasets.smoke import SmokeDatasetAdapter
 
 __all__ = [
     "DatasetAdapter",
+    "FinQAAdapter",
     "SmokeDatasetAdapter",
     "available_datasets",
     "create_dataset",

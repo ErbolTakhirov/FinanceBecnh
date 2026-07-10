@@ -174,17 +174,27 @@ def licenses() -> None:
 def prepare(name: str) -> None:
     """Prepare (download/verify) a benchmark's data. In-repo fixtures need no preparation."""
     try:
-        manifest = create_dataset(name).manifest()
+        adapter = create_dataset(name)
     except ConfigError as exc:
         _fail(str(exc))
         return
+    manifest = adapter.manifest()
     if manifest.download_method is None:
         console.print(f"[green]{name}[/green] is bundled in-repo — nothing to prepare.")
         return
-    _fail(
-        f"{name} preparation is not yet implemented (download_method={manifest.download_method!r})."
-        " See docs/datasets.md for manual setup instructions."
-    )
+    console.print(f"Preparing [bold]{name}[/bold] via {manifest.download_method}...")
+    try:
+        adapter.prepare()
+    except NotImplementedError:
+        _fail(
+            f"{name} declares download_method={manifest.download_method!r} but its adapter "
+            "does not implement prepare() yet. See docs/datasets.md."
+        )
+        return
+    except ConfigError as exc:
+        _fail(str(exc))
+        return
+    console.print(f"[bold green]{name} prepared.[/bold green]")
 
 
 @app.command(name="validate-dataset")
@@ -198,7 +208,11 @@ def validate_dataset(name: str) -> None:
     manifest = adapter.manifest()
     console.print(f"[bold]{name}[/bold] — status={manifest.status.value}")
     for split in manifest.local_splits:
-        samples = adapter.load(split)
+        try:
+            samples = adapter.load(split)
+        except ConfigError as exc:
+            _fail(str(exc))
+            return
         console.print(
             f"  split={split}: {len(samples)} samples validated against the canonical schema"
         )

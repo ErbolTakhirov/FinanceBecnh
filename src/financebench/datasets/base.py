@@ -46,6 +46,13 @@ class DatasetAdapter(ABC):
         """Provenance, license, and support-status record for this benchmark."""
         raise NotImplementedError
 
+    def prepare(self) -> None:
+        """Download/verify this benchmark's data. Default: nothing to do (in-repo fixtures like
+        ``smoke`` need no preparation). Adapters backed by an external download override this;
+        the CLI's ``prepare`` command uses ``manifest().download_method`` to decide whether to
+        call it at all."""
+        return None
+
     def available_splits(self) -> tuple[str, ...]:
         """Local split names this adapter can actually load (from its own manifest)."""
         return self.manifest().local_splits

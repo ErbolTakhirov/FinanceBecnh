@@ -356,3 +356,91 @@ def test_cache_clear_on_empty_cache_is_a_no_op() -> None:
     result = runner.invoke(app, ["cache", "clear", "--yes"])
     assert result.exit_code == 0
     assert "already empty" in result.output
+
+
+# --------------------------------------------------------------------------- finqa integration
+# Runs the real `finqa` adapter end to end through the CLI (multi-metric scoring, --max-samples
+# truncation) using the committed test fixture as the data dir, so it needs no network access.
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_MOCK_MODEL_CONFIG = _REPO_ROOT / "configs" / "models" / "mock.yaml"
+
+
+def _stage_finqa_fixture_as_default_data_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """FinQAAdapter defaults to `data/downloads/finqa/` under the CWD — chdir into a fake repo
+    root with the committed fixture copied into that exact location, so the CLI's default (no
+    custom data_dir plumbing) exercises the real adapter without any network access."""
+    import shutil
+
+    fixture_dir = _REPO_ROOT / "tests" / "fixtures" / "finqa"
+    fake_data_dir = tmp_path / "data" / "downloads" / "finqa"
+    fake_data_dir.mkdir(parents=True)
+    shutil.copy(fixture_dir / "test.json", fake_data_dir / "test.json")
+    monkeypatch.chdir(tmp_path)
+
+
+def test_eval_finqa_reports_both_generic_and_native_metrics(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _stage_finqa_fixture_as_default_data_dir(tmp_path, monkeypatch)
+    runs_dir = tmp_path / "runs"
+    result = runner.invoke(
+        app,
+        [
+            "eval",
+            "--benchmark",
+            "finqa",
+            "--split",
+            "test",
+            "--model-config",
+            str(_MOCK_MODEL_CONFIG),
+            "--output-dir",
+            str(runs_dir),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    run_dir = next(runs_dir.iterdir())
+    metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert set(metrics) == {"exact_match", "finqa_execution_accuracy"}
+    assert metrics["finqa_execution_accuracy"]["mean"] == 1.0
+
+
+def test_eval_max_samples_truncates_and_still_scores_correctly(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _stage_finqa_fixture_as_default_data_dir(tmp_path, monkeypatch)
+    runs_dir = tmp_path / "runs"
+    result = runner.invoke(
+        app,
+        [
+            "eval",
+            "--benchmark",
+            "finqa",
+            "--split",
+            "test",
+            "--model-config",
+            str(_MOCK_MODEL_CONFIG),
+            "--output-dir",
+            str(runs_dir),
+            "--max-samples",
+            "5",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    run_dir = next(runs_dir.iterdir())
+    coverage = json.loads((run_dir / "coverage.json").read_text(encoding="utf-8"))
+    assert coverage["evaluated_samples"] == 5
+    predictions = (run_dir / "predictions.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    assert len(predictions) == 5
+
+
+def test_validate_dataset_reports_missing_data_cleanly_instead_of_crashing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)  # no data/downloads/finqa/ here — deliberately missing
+    result = runner.invoke(app, ["validate-dataset", "finqa"])
+    assert result.exit_code == 1
+    assert "Traceback" not in result.output
+    assert "prepare finqa" in result.output

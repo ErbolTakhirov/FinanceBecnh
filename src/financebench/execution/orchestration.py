@@ -15,12 +15,13 @@ from pathlib import Path
 from financebench import __version__
 from financebench.config.model_config import ModelConfigFile
 from financebench.datasets.base import create_dataset
+from financebench.evaluation.benchmark_metrics import metrics_for_benchmark, preferred_metric_name
 from financebench.evaluation.capability_map import rollup_capabilities
-from financebench.evaluation.metrics.exact_match import ExactMatchMetric
 from financebench.execution.cache import ResponseCache
 from financebench.execution.engine import RunEngine, RunResult
 from financebench.models.base import get_provider_class
 from financebench.schemas.manifest import DatasetManifest
+from financebench.schemas.metric import MetricResult
 from financebench.schemas.sample import CanonicalSample
 from financebench.storage.artifacts import ArtifactInputs, write_run_artifacts
 from financebench.utils.errors import ConfigError
@@ -104,12 +105,25 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
     finally:
         await provider.aclose()
 
-    metric = ExactMatchMetric()
-    metric_results = tuple(
-        metric.score(sample, prediction)
-        for sample, prediction in zip(samples, run_result.predictions, strict=True)
+    # run_result.samples is the (possibly --max-samples-truncated) list actually run, 1:1 with
+    # run_result.predictions — score and report against *that*, not the pre-truncation `samples`.
+    evaluated_samples = run_result.samples
+    all_metric_results: list[MetricResult] = []
+    for sample, prediction in zip(evaluated_samples, run_result.predictions, strict=True):
+        for metric in metrics_for_benchmark(sample.benchmark):
+            all_metric_results.append(metric.score(sample, prediction))
+    metric_results = tuple(all_metric_results)
+
+    # Every applicable metric is recorded (metric_details.jsonl/metrics.json), but only the
+    # "preferred" one per sample — a benchmark's own native metric where it has one, else
+    # exact_match — feeds the capability-dimension rollup.
+    sample_by_id = {sample.sample_id: sample for sample in evaluated_samples}
+    preferred_results = tuple(
+        result
+        for result in metric_results
+        if result.metric_name == preferred_metric_name(sample_by_id[result.sample_id].benchmark)
     )
-    capability_aggregates = rollup_capabilities(samples, metric_results)
+    capability_aggregates = rollup_capabilities(evaluated_samples, preferred_results)
 
     clock = RealClock()
     inputs = ArtifactInputs(
@@ -121,7 +135,7 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         created_at=clock.now_iso(),
         financebench_version=__version__,
         dataset_manifests=dataset_manifests,
-        samples=samples,
+        samples=evaluated_samples,
         run_result=run_result,
         metric_results=metric_results,
         capability_aggregates=capability_aggregates,

@@ -73,8 +73,15 @@ def _mock_simulation_context(sample: CanonicalSample) -> dict[str, object]:
 @dataclass(frozen=True)
 class RunResult:
     """In-memory outcome of a run. Persisting this to ``runs/{run_id}/`` is a separate concern
-    (``storage/artifacts.py``) — the engine only runs samples and reports what happened."""
+    (``storage/artifacts.py``) — the engine only runs samples and reports what happened.
 
+    ``samples`` is the (possibly ``config.limit``-truncated) list actually run — 1:1 and in the
+    same order as ``predictions``. Callers must score/report against *this* list, not whatever
+    superset they originally passed to :meth:`RunEngine.run`, or a ``--max-samples`` run will
+    zip predictions against the wrong samples.
+    """
+
+    samples: tuple[CanonicalSample, ...]
     predictions: tuple[Prediction, ...]
     n_samples: int
     n_errors: int
@@ -156,6 +163,7 @@ class RunEngine:
         n_errors = sum(1 for p in predictions if p.response is None)
         n_cache_hits = sum(1 for p in predictions if p.cache_hit)
         return RunResult(
+            samples=tuple(limited),
             predictions=tuple(predictions),
             n_samples=len(predictions),
             n_errors=n_errors,

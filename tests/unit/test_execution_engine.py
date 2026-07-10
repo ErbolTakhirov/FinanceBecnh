@@ -265,3 +265,7 @@ async def test_max_samples_limit_is_applied(tmp_path: Path) -> None:
         "smoke:dev:1",
         "smoke:dev:2",
     ]
+    # result.samples must be the *truncated* set, 1:1 with predictions — a caller zipping the
+    # original (untruncated) sample list against predictions would raise or silently misalign.
+    assert [s.sample_id for s in result.samples] == [p.sample_id for p in result.predictions]
+    assert len(result.samples) == len(samples[:3])
