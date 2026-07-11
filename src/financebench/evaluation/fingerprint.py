@@ -32,6 +32,7 @@ __all__ = [
     "DATASET_ADAPTER_VERSIONS",
     "METRIC_VERSIONS",
     "PARSER_VERSION",
+    "RETRIEVAL_VERSION",
     "SCORING_VERSION",
     "EvaluatorFingerprint",
     "current_fingerprint",
@@ -81,6 +82,20 @@ DATASET_ADAPTER_VERSIONS: dict[str, str] = {
     "smoke": "in-repo@1",
 }
 
+#: The retrieval pipeline. It belongs in the fingerprint because it moves every
+#: ``retrieval_required`` score without the model changing at all — which is exactly what happened.
+#:
+#: v2: ``document_scoped`` now actually narrows the corpus to the filing the question names. It used
+#: to leave the retriever searching all 12,013 pages and merely paste the document's name onto the
+#: front of the query, so a run artifact stamped ``document_scoped: true`` while nothing had been
+#: scoped at all. The label described a setting the code never entered.
+#:
+#: The cost of that bug, measured: BM25 page recall @10 in the "document-scoped" run was **4.0 %** —
+#: which is *precisely* the open-corpus number, because that is what it was actually doing. With the
+#: corpus genuinely narrowed it is **18.7 %**, nearly five times better. Every v1 retrieval number
+#: describes a setting nobody asked for.
+RETRIEVAL_VERSION = "2"
+
 #: Capability weights, gate thresholds, and how a per-sample result reaches a capability score.
 #: Changing any of them moves every verdict.
 #:
@@ -100,6 +115,7 @@ class EvaluatorFingerprint:
     prompt_profiles: dict[str, str]
     metric_versions: dict[str, str]
     dataset_adapters: dict[str, str]
+    retrieval_version: str
     scoring_version: str
     scoring_config_hash: str
 
@@ -112,6 +128,7 @@ class EvaluatorFingerprint:
                 "prompts": dict(sorted(self.prompt_profiles.items())),
                 "metrics": dict(sorted(self.metric_versions.items())),
                 "datasets": dict(sorted(self.dataset_adapters.items())),
+                "retrieval": self.retrieval_version,
                 "scoring": self.scoring_version,
                 "scoring_config": self.scoring_config_hash,
             },
@@ -127,6 +144,7 @@ class EvaluatorFingerprint:
             "prompt_profiles": self.prompt_profiles,
             "metric_versions": self.metric_versions,
             "dataset_adapters": self.dataset_adapters,
+            "retrieval_version": self.retrieval_version,
             "scoring_version": self.scoring_version,
             "scoring_config_hash": self.scoring_config_hash,
         }
@@ -169,6 +187,7 @@ def current_fingerprint() -> EvaluatorFingerprint:
         prompt_profiles=profiles,
         metric_versions=dict(METRIC_VERSIONS),
         dataset_adapters=dict(DATASET_ADAPTER_VERSIONS),
+        retrieval_version=RETRIEVAL_VERSION,
         scoring_version=SCORING_VERSION,
         scoring_config_hash=_scoring_config_hash(),
     )

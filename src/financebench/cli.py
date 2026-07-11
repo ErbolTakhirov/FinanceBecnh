@@ -33,6 +33,7 @@ from financebench.models.base import create_provider, describe_providers, get_pr
 from financebench.models.verification import ProviderVerification, verify_all_providers
 from financebench.prompts.profiles import available_prompt_profiles
 from financebench.reporting import build_mission_report, load_runs
+from financebench.retrieval.ablation import run_ablation
 from financebench.schemas.common import (
     DEFAULT_PROMPT_PROFILE,
     ConversationProtocol,
@@ -988,6 +989,92 @@ def capability_report(
             f"  [yellow]{unanswered} of the five questions is/are UNANSWERED[/yellow] — "
             "the report says so rather than printing a zero."
         )
+
+
+@app.command(name="retrieval-eval")
+def retrieval_eval(
+    benchmark: Annotated[str, typer.Option("--benchmark")] = "financebench",
+    split: Annotated[str, typer.Option("--split")] = "open_source",
+    retrievers: Annotated[
+        str, typer.Option("--retrievers", help="Comma-separated: bm25,dense,hybrid")
+    ] = "bm25",
+    top_ks: Annotated[
+        str, typer.Option("--top-k", help="Comma-separated, e.g. 5,10,20")
+    ] = "5,10,20",
+    output: Annotated[Path, typer.Option("--output")] = Path("reports/retrieval_ablation.json"),
+) -> None:
+    """Compare retrievers on recall — with NO model in the loop.
+
+    The retrieval-mode run found that 74 of 85 wrong answers were RETRIEVAL misses: the right page
+    was never put in front of the model. Only 2 were cases where the page was found and the model
+    then fumbled it. Improving the model would move almost nothing; the retriever is the bottleneck.
+
+    Recall@k needs a query, a corpus, and the gold evidence — read AFTER retrieval, never before.
+    So this is the cheapest question in the platform and the one with the most leverage.
+
+    Every retriever asked for is reported. A retriever chosen by its own benchmark and then shown
+    without its rivals is a number with the losing evidence deleted.
+    """
+    names = [r.strip() for r in retrievers.split(",") if r.strip()]
+    ks = [int(k.strip()) for k in top_ks.split(",") if k.strip()]
+
+    samples = list(create_dataset(benchmark).load(split))
+    pdf_dir = Path("data/downloads") / benchmark / "pdfs"
+    if not pdf_dir.is_dir():
+        _fail(f"no document corpus at {pdf_dir}. Run: financebench prepare {benchmark}")
+        return
+
+    console.print(
+        f"Sweeping {names} x k={ks} x [open-corpus, document-scoped] over {len(samples)} questions. "
+        "No model is called."
+    )
+
+    def progress(name: str, scoped: bool) -> None:
+        console.print(f"  done: {name} ({'document-scoped' if scoped else 'open-corpus'})")
+
+    try:
+        cells = run_ablation(
+            samples, pdf_dir=pdf_dir, retrievers=names, top_ks=ks, on_progress=progress
+        )
+    except RuntimeError as exc:
+        _fail(str(exc))
+        return
+
+    table = Table(
+        "Retriever", "Scoping", "k", "Page recall", "Doc recall", "Evidence F1", "Gold rank"
+    )
+    for cell in cells:
+        table.add_row(
+            cell.retriever,
+            "document-scoped" if cell.document_scoped else "open-corpus",
+            str(cell.top_k),
+            f"{cell.page_recall:.1%}",
+            f"{cell.document_recall:.1%}",
+            f"{cell.evidence_f1:.3f}",
+            "-" if cell.mean_gold_rank is None else f"{cell.mean_gold_rank:.1f}",
+        )
+    console.print(table)
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "benchmark": benchmark,
+        "split": split,
+        "n_questions": len(samples),
+        "note": (
+            "Recall@k is measured with no model in the loop. Gold evidence is read only AFTER "
+            "retrieval. Every retriever swept is reported, including the losers."
+        ),
+        "cells": [cell.to_json() for cell in cells],
+    }
+    output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    console.print(f"\nWritten to [bold]{output}[/bold]")
+
+    best = max(cells, key=lambda c: c.page_recall)
+    console.print(
+        f"Best page recall: [bold]{best.page_recall:.1%}[/bold] "
+        f"({best.retriever}, k={best.top_k}, "
+        f"{'document-scoped' if best.document_scoped else 'open-corpus'})"
+    )
 
 
 if __name__ == "__main__":
