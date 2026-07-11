@@ -28,10 +28,17 @@ it is a real cost. It is just not the same thing as lying.
 from __future__ import annotations
 
 import re
+from enum import StrEnum
 
 from financebench.schemas.model_io import FinancialAnswer
 
-__all__ = ["REFUSAL_PATTERNS", "declined", "looks_like_a_refusal"]
+__all__ = [
+    "REFUSAL_PATTERNS",
+    "RefusalOutcome",
+    "classify_refusal",
+    "declined",
+    "looks_like_a_refusal",
+]
 
 #: Phrases in which a model says "I cannot answer this from what you gave me". English and Russian,
 #: because SMB-CFO asks in both and a Russian refusal is still a refusal.
@@ -62,9 +69,46 @@ _COMPILED = tuple(re.compile(p, re.IGNORECASE) for p in REFUSAL_PATTERNS)
 #: A model that says "I cannot determine X, but here is my estimate: 42" has NOT refused. It has
 #: hedged and then answered anyway, which is the dangerous behaviour wearing a disclaimer.
 _HEDGE_THEN_ANSWER = re.compile(
-    r"\b(?:however|but|although|nevertheless|estimat|assum|approximat|roughly|based on trend)",
+    # English...
+    r"\b(?:however|but|although|nevertheless|estimat|assum|approximat|roughly|based on trend)"
+    # ...and Russian. SMB-CFO asks in both, and a hedge-then-answer in Russian is exactly as
+    # dangerous as one in English. An English-only detector reported a Russian model that hedged and
+    # then invented a figure as having given a clean answer.
+    r"|\b(?:однако|но\b|примерно|около|приблизительно|оценочно|предположительно|исходя\s+из)",
     re.IGNORECASE,
 )
+
+
+def _states_a_substantive_number(text: str) -> bool:
+    """Did the text put a real financial figure in front of the reader?
+
+    Years, small counts and page numbers do not count — "I cannot answer for 2027" is a refusal, not
+    an answer containing the number 2027. What counts is a figure a reader would act on.
+    """
+    for token in re.findall(r"-?\d[\d,]*\.?\d*", text):
+        # A YEAR IS NOT A FIGURE, and this `continue` is load-bearing. "I cannot answer for December
+        # 2027" is a refusal that names the period it cannot reach — not an answer containing the
+        # number 2027. The first version of this fell through to a `> 100` test, which caught every
+        # year and turned every correct refusal about a future date into a hallucination.
+        # Strip the sentence's punctuation off the token FIRST. "...for December 2027." tokenizes as
+        # `2027.` — with the full stop attached — and a year regex applied to that misses, which
+        # turned a correct refusal into a stated figure. Clean, then classify.
+        cleaned = token.rstrip(".").replace(",", "")
+        if re.fullmatch(r"(19|20)\d{2}", cleaned):
+            continue
+        digits = cleaned.replace(".", "").lstrip("-")
+        if len(digits) >= 4:
+            return True
+        try:
+            if abs(float(cleaned)) > 100:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def _hedged(text: str) -> bool:
+    return bool(_HEDGE_THEN_ANSWER.search(text)) and bool(any(p.search(text) for p in _COMPILED))
 
 
 def looks_like_a_refusal(text: str) -> bool:
@@ -93,15 +137,86 @@ def looks_like_a_refusal(text: str) -> bool:
     return True
 
 
-def declined(answer: FinancialAnswer | None) -> bool:
-    """Did the model decline to answer — by the flag, or in its own words?
+class RefusalOutcome(StrEnum):
+    """What the model actually did, when asked something it may not be able to answer.
 
-    The flag is authoritative when set. When it isn't, the text is read, because a model that
-    correctly declines in a shape we didn't ask for is still correctly declining, and grading it as
-    a hallucination would be a lie about the model.
+    These are not shades of one thing. They are different behaviours with different consequences, and
+    the reason to enumerate them is that the two most dangerous ones both *look* like refusals.
     """
+
+    #: It gave an answer. Whether the answer is right is a different metric's problem.
+    ANSWERED = "answered"
+    #: It declined, and stated no figure. The behaviour a benchmark is trying to reward.
+    REFUSED = "refused"
+    #: It said it could not answer — **and then answered anyway.** "The data does not support this,
+    #: however I estimate 42,000." This is NOT a refusal. It is a number with a disclaimer attached,
+    #: and a number with a disclaimer is still a number: a reader will use it. Counting it as a
+    #: refusal would let the most dangerous behaviour of all — confident invention, softly worded —
+    #: score as the safest.
+    HEDGED_THEN_ANSWERED = "hedged_then_answered"
+    #: The `insufficient_information` flag is TRUE and the model stated a figure anyway. The flag and
+    #: the substance contradict each other, and the substance wins: the figure is what a reader takes
+    #: away. A benchmark that trusted the flag here would score an invented number as a model's
+    #: finest hour.
+    FLAGGED_BUT_ANSWERED = "flagged_but_answered"
+    #: No response, or nothing parseable. **Not a refusal.** A network timeout is our failure, not the
+    #: model declining, and scoring it as a thoughtful refusal would be a lie about the model.
+    NO_ANSWER = "no_answer"
+
+
+#: The precedence, written down once so it can be argued with rather than rediscovered:
+#:
+#:   1. No answer at all            -> NO_ANSWER      (never a refusal — it is our failure, not theirs)
+#:   2. A figure was stated         -> the model ANSWERED, whatever else it said. The substance beats
+#:                                     both the flag and the hedging, because the figure is what a
+#:                                     reader walks away with.
+#:   3. The flag is set             -> REFUSED
+#:   4. The text reads as a refusal -> REFUSED        (a decline in the model's own words is still a
+#:                                     decline; grading it as hallucination inverted the platform's
+#:                                     most important metric once already)
+#:   5. Otherwise                   -> ANSWERED
+#:
+#: Rule 2 is the one that does the work, and it is the reason this is an enum and not a boolean.
+_PRECEDENCE_DOC = __doc__
+
+
+def classify_refusal(answer: FinancialAnswer | None) -> RefusalOutcome:
+    """Apply the precedence rules above. This is the single definition; ``declined`` wraps it."""
     if answer is None:
-        return False
+        return RefusalOutcome.NO_ANSWER
+
+    text = f"{answer.answer} {answer.brief_explanation or ''}".strip()
+    if not text and answer.numeric_value is None and not answer.insufficient_information:
+        return RefusalOutcome.NO_ANSWER
+
+    stated_a_figure = answer.numeric_value is not None or _states_a_substantive_number(text)
+
+    # Rule 2. The substance beats the flag AND the hedging. A model that sets
+    # insufficient_information=true and then writes "roughly 42,000" has published 42,000.
+    if stated_a_figure:
+        if answer.insufficient_information:
+            return RefusalOutcome.FLAGGED_BUT_ANSWERED
+        if _hedged(text):
+            return RefusalOutcome.HEDGED_THEN_ANSWERED
+        return RefusalOutcome.ANSWERED
+
     if answer.insufficient_information:
-        return True
-    return looks_like_a_refusal(f"{answer.answer} {answer.brief_explanation or ''}")
+        return RefusalOutcome.REFUSED
+    if looks_like_a_refusal(text):
+        return RefusalOutcome.REFUSED
+    return RefusalOutcome.ANSWERED
+
+
+#: Outcomes that count as the model having declined. Exactly one of the five.
+_IS_REFUSAL = frozenset({RefusalOutcome.REFUSED})
+
+
+def declined(answer: FinancialAnswer | None) -> bool:
+    """Did the model decline to answer?
+
+    True for exactly one of the five outcomes: :attr:`RefusalOutcome.REFUSED`. In particular it is
+    **false** for a model that hedged and then answered, and **false** for one that set the
+    `insufficient_information` flag and then stated a figure anyway — because in both cases a number
+    reached the reader, and a number that reached the reader will be used.
+    """
+    return classify_refusal(answer) in _IS_REFUSAL
