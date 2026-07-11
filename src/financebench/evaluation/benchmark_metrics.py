@@ -37,6 +37,12 @@ _PREFERRED: dict[tuple[str, bool], str] = {
     # — under a name that cannot be mistaken for the official one.
     ("convfinqa", True): "convfinqa_execution_accuracy",  # official
     ("convfinqa", False): "convfinqa_turn_accuracy",  # ours; NOT the official metric
+    # SECQUE has NO official metric — its gold is an expert's prose. The "preferred" one here is the
+    # hallucination detector, deliberately: it is the only deterministic check a fluent answer cannot
+    # talk its way past, and it is the one whose failure actually matters. Analytical QUALITY is the
+    # judge's job (evaluation/judge/), reported separately and never folded into this.
+    ("secque", False): "secque_unsupported_numeric_claim",
+    ("secque", True): "secque_unsupported_numeric_claim",
 }
 
 #: (benchmark, elicits_program) -> further metrics worth recording, beyond the preferred one.
@@ -61,6 +67,16 @@ _ADDITIONAL: dict[tuple[str, bool], tuple[str, ...]] = {
     # Program accuracy sees what execution accuracy cannot: `(a - b) / b` and `a / b - 1` agree on
     # the number and disagree on the reasoning.
     ("convfinqa", True): ("convfinqa_program_accuracy", "convfinqa_turn_accuracy"),
+    ("secque", False): (
+        "secque_numeric_agreement",
+        "secque_comparison_direction",
+        "secque_filing_identification",
+    ),
+    ("secque", True): (
+        "secque_numeric_agreement",
+        "secque_comparison_direction",
+        "secque_filing_identification",
+    ),
 }
 
 

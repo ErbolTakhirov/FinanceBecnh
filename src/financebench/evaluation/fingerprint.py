@@ -66,6 +66,12 @@ METRIC_VERSIONS: dict[str, str] = {
     "convfinqa_turn_accuracy": "1",  # ours; ConvFinQA's official metrics grade programs
     "convfinqa_execution_accuracy": "1",  # official (FinQA's parity-tested executor)
     "convfinqa_program_accuracy": "1",  # official
+    # SECQUE Layer A. DIAGNOSTICS, not a quality score — and named so in the metric docstrings.
+    # SECQUE's gold is an expert's prose; there is no exact-match metric and there cannot be one.
+    "secque_numeric_agreement": "1",
+    "secque_unsupported_numeric_claim": "1",
+    "secque_comparison_direction": "1",
+    "secque_filing_identification": "1",
 }
 
 #: Dataset adapters, pinned to the upstream commit their data comes from. A locally *generated*
@@ -78,6 +84,7 @@ DATASET_ADAPTER_VERSIONS: dict[str, str] = {
     "finance_reasoning": "official@b0fe6455",
     "financebench": "open_source@cc39aeb4",
     "convfinqa": "official@cf3eed2d",
+    "secque": "hf@894196b8",
     "smb_cfo": "generated@1",
     "smoke": "in-repo@1",
 }
