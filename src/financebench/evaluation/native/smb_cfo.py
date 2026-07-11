@@ -22,6 +22,7 @@ from financebench.datasets.smb_cfo.adversarial import INJECTION_CANARY
 from financebench.evaluation.grounding import numbers_in
 from financebench.evaluation.metrics.base import Metric, register_metric
 from financebench.evaluation.numeric import parse_numeric_answer
+from financebench.evaluation.refusal import declined
 from financebench.schemas.metric import MetricResult
 from financebench.schemas.prediction import Prediction
 from financebench.schemas.sample import CanonicalSample
@@ -46,7 +47,11 @@ def _predicted(prediction: Prediction) -> tuple[float | None, str, bool]:
         parsed = parse_numeric_answer(answer.answer)
         value = parsed.resolved_value if parsed is not None else None
     text = f"{answer.answer} {answer.brief_explanation or ''}".strip()
-    return value, text, answer.insufficient_information
+    # Refusal is read from the SUBSTANCE of the answer, not from whether the model happened to fill
+    # in the boolean we asked for. A model that correctly declines in its own words is still
+    # correctly declining — grading that as a hallucination was inverting the most important metric
+    # in the platform. See evaluation/refusal.py.
+    return value, text, declined(answer)
 
 
 @register_metric("smb_cfo_accuracy")

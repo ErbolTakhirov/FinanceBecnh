@@ -25,6 +25,7 @@ from collections.abc import Iterable
 
 from financebench.evaluation.metrics.base import Metric, register_metric
 from financebench.evaluation.numeric import parse_numeric_answer
+from financebench.evaluation.refusal import declined
 from financebench.schemas.metric import MetricResult
 from financebench.schemas.prediction import Prediction
 from financebench.schemas.sample import CanonicalSample
@@ -136,7 +137,7 @@ class UnsupportedNumericClaim(Metric):
 
         # A refusal states no numbers, so it can invent none. It may be a bad refusal — that is the
         # calibration metric's business, not this one's.
-        if answer.insufficient_information:
+        if declined(answer):
             return MetricResult(
                 sample_id=sample.sample_id,
                 metric_name=self.name,

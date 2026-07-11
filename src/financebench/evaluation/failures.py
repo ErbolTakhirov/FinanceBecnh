@@ -23,6 +23,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field
 
 from financebench.evaluation.numeric import parse_numeric_answer
+from financebench.evaluation.refusal import declined
 from financebench.schemas.metric import MetricResult
 from financebench.schemas.prediction import Prediction
 from financebench.schemas.sample import CanonicalSample
@@ -231,7 +232,7 @@ def attribute_failure(
 
     # -- calibration: did it refuse, and should it have?
     should_refuse = sample.evaluation.should_refuse
-    refused = answer.insufficient_information
+    refused = declined(answer)
     if refused and not should_refuse:
         return record(
             FailureType.UNNECESSARY_REFUSAL,
@@ -250,6 +251,18 @@ def attribute_failure(
     predicted_value = _predicted_number(prediction)
 
     if gold_value is not None and predicted_value is None:
+        # A model that returned well-formed JSON in a shape we never asked for has not got the
+        # number wrong — it has failed to answer in the requested format. That is a real cost, and
+        # it is bounded by its own gate (invalid_output_rate), but it is a FORMATTING failure and
+        # calling it a reasoning failure would conflate the two. The mission is explicit: a
+        # financially correct answer with malformed JSON must not be scored as a financially wrong
+        # one.
+        raw = (response.content or "").strip()
+        if raw.startswith("{") and '"answer"' not in raw:
+            return record(
+                FailureType.INVALID_STRUCTURED_RESPONSE,
+                "returned JSON, but not the requested envelope — no answer field to read",
+            )
         return record(
             FailureType.NO_EXTRACTABLE_NUMBER,
             "a numeric answer was expected but none could be extracted from the response",

@@ -138,6 +138,8 @@ extend-immutable-calls = ["typer.Argument", "typer.Option"]
 # Latin lookalike, which here is noise on every single line.
 "src/financebench/datasets/smb_cfo/tasks.py" = ["RUF001", "RUF002", "RUF003"]
 "src/financebench/datasets/smb_cfo/adversarial.py" = ["RUF001", "RUF002", "RUF003"]
+# Refusal detection must recognise a Russian refusal. The Cyrillic is the point.
+"src/financebench/evaluation/refusal.py" = ["RUF001", "RUF002", "RUF003"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
