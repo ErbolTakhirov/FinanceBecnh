@@ -9,12 +9,21 @@ If the clones aren't present the suites *skip*, loudly, rather than passing vacu
 test that silently degrades into a no-op is worse than no parity test, because it reports comfort
 it hasn't earned.
 
+That is not a hypothetical. ``/tmp`` was cleared, and the whole suite went quietly green-with-skips:
+**seventeen tests reporting nothing at all**, in the one place the platform claims its numbers match
+the published ones. Worse, these instructions were themselves incomplete — they omitted
+FinanceReasoning entirely, and two of the official evaluators' own dependencies (``tqdm``,
+``loguru``), so following them to the letter still left four tests skipping and the rest erroring on
+an import. Run ``bash tests/parity/setup_references.sh`` instead; it is checked, and it pins.
+
+**Pin the commits.** The FinanceReasoning repo must be the one the adapter pins
+(``BUPT-Reasoning-Lab``, ``b0fe6455``) — there is a similarly-named ``BUPT-Reasoning`` org whose code
+is *different*. Cloning that one produces two failing parity tests that mean nothing whatsoever,
+which is a far more expensive outcome than a skip: it looks like a real defect in our metric.
+
 Set up (see docs/research/metric_parity.md):
 
-    git clone --depth 1 https://github.com/czyssrs/FinQA        /tmp/financebench-references/finqa
-    git clone --depth 1 https://github.com/NExTplusplus/TAT-QA  /tmp/financebench-references/tatqa
-    python3 -m venv /tmp/financebench-references/official-venv
-    /tmp/financebench-references/official-venv/bin/pip install sympy numpy scipy pandas
+    bash tests/parity/setup_references.sh
 """
 
 from __future__ import annotations
