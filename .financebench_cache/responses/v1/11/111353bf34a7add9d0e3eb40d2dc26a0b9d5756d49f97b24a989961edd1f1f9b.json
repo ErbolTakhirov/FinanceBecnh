@@ -1,0 +1,39 @@
+{
+  "cache_key": "111353bf34a7add9d0e3eb40d2dc26a0b9d5756d49f97b24a989961edd1f1f9b",
+  "written_at": "2026-07-11T07:27:54.138557Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"Consistently with our internal management reporting\", \"numeric_value\": null, \"unit\": null, \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": 1, \"table\": \"(1)\", \"row\": \"\"}], \"insufficient_information\": false, \"confidence\": 0.95, \"brief_explanation\": \"The context states that industry end market information is presented consistently with internal management reporting.\"}",
+    "financial_answer": {
+      "answer": "Consistently with our internal management reporting",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": 1,
+          "table": "(1)",
+          "row": ""
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The context states that industry end market information is presented consistently with internal management reporting."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 621,
+      "completion_tokens": 96,
+      "total_tokens": 717
+    },
+    "latency_ms": 26878.723283,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-75",
+      "finish_reason": "stop"
+    }
+  }
+}

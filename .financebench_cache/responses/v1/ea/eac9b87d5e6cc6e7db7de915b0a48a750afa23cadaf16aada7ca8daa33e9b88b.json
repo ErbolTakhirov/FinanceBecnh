@@ -1,0 +1,39 @@
+{
+  "cache_key": "eac9b87d5e6cc6e7db7de915b0a48a750afa23cadaf16aada7ca8daa33e9b88b",
+  "written_at": "2026-07-11T07:28:04.041382Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"2019, 2018, 2017\", \"numeric_value\": null, \"unit\": null, \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table in the provided context\", \"row\": null}], \"insufficient_information\": false, \"confidence\": null, \"brief_explanation\": \"The table clearly shows data for these three years.\"}",
+    "financial_answer": {
+      "answer": "2019, 2018, 2017",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table in the provided context",
+          "row": null
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": null,
+      "brief_explanation": "The table clearly shows data for these three years."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 629,
+      "completion_tokens": 97,
+      "total_tokens": 726
+    },
+    "latency_ms": 24289.677612000105,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-566",
+      "finish_reason": "stop"
+    }
+  }
+}

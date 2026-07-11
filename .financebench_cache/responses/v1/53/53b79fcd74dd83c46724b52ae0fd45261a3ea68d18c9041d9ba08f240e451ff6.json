@@ -1,0 +1,39 @@
+{
+  "cache_key": "53b79fcd74dd83c46724b52ae0fd45261a3ea68d18c9041d9ba08f240e451ff6",
+  "written_at": "2026-07-11T07:27:27.259261Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"decrease\", \"numeric_value\": -12.6, \"unit\": \"million usd\", \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table\", \"row\": \"Other\"}], \"insufficient_information\": false, \"confidence\": 0.95, \"brief_explanation\": \"The 'Other' category in 2019 is $44.1 million compared to $56.7 million in 2018, indicating a decrease of $12.6 million.\"}",
+    "financial_answer": {
+      "answer": "decrease",
+      "numeric_value": -12.6,
+      "unit": "million usd",
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table",
+          "row": "Other"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The 'Other' category in 2019 is $44.1 million compared to $56.7 million in 2018, indicating a decrease of $12.6 million."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 517,
+      "completion_tokens": 126,
+      "total_tokens": 643
+    },
+    "latency_ms": 24598.826644000153,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-341",
+      "finish_reason": "stop"
+    }
+  }
+}
