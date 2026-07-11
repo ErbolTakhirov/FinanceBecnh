@@ -1077,5 +1077,93 @@ def retrieval_eval(
     )
 
 
+@app.command(name="calibrate-judge")
+def calibrate_judge(
+    judge_model: Annotated[
+        str, typer.Option("--judge", help="The judge. Must not be the candidate's own family.")
+    ] = "ollama/llama3.2:3b",
+    n: Annotated[int, typer.Option("--cases", help="Calibration cases to run.")] = 48,
+    output: Annotated[Path, typer.Option("--output")] = Path("reports/judge_calibration.json"),
+) -> None:
+    """Find out whether the judge can tell a good answer from a bad one — BEFORE trusting it.
+
+    Runs the judge against cases whose correct verdict is known by construction: the expert's own
+    answer (correct), the same answer about a different company (wrong), the same answer with an
+    invented figure (wrong), a refusal where the filing plainly contains the answer (wrong), and so on.
+
+    \b
+    A judge that does not clear the bar does not get to produce a score. The analytical dimension is
+    reported as NOT_EVALUATED, with the reason — never as a zero.
+    """
+    from financebench.datasets.secque import SecqueAdapter
+    from financebench.evaluation.judge import (
+        build_calibration_set,
+        judge_answer,
+        score_calibration,
+    )
+
+    judge = ModelSpec.parse(judge_model)
+    console.print(f"Calibrating [bold]{judge.ref}[/bold] on {n} derived cases...")
+    console.print(
+        "[dim]These are labelled derived_judge_calibration. They are NOT SECQUE tasks and are "
+        "never reported as such.[/dim]\n"
+    )
+
+    samples = list(SecqueAdapter().load("test"))
+    cases = build_calibration_set(samples, target=n)
+
+    async def run() -> list[bool | None]:
+        provider = create_provider(judge.provider)
+        verdicts: list[bool | None] = []
+        try:
+            for index, case in enumerate(cases, start=1):
+                verdict = await judge_answer(
+                    case.sample, case.answer, provider=provider, judge=judge
+                )
+                verdicts.append(verdict.correct if verdict.valid else None)
+                mark = "ok" if verdicts[-1] == case.should_be_correct else "MISS"
+                console.print(
+                    f"  [{index:2d}/{len(cases)}] {case.corruption:36s} "
+                    f"expected={case.should_be_correct!s:5s} got={verdicts[-1]!s:5s} {mark}"
+                )
+        finally:
+            await provider.aclose()
+        return verdicts
+
+    verdicts = asyncio.run(run())
+    report = score_calibration(cases, verdicts)
+
+    console.print()
+    table = Table("Corruption", "Judge accuracy")
+    for name, accuracy in sorted(report.by_corruption.items()):
+        table.add_row(name, f"{accuracy:.0%}")
+    console.print(table)
+
+    colour = "green" if report.passed else "red"
+    console.print(f"\n[{colour}]{report.verdict}[/{colour}]")
+    console.print(
+        f"  accuracy {report.accuracy:.1%} | false positives {report.false_positive_rate:.1%} "
+        f"| false negatives {report.false_negative_rate:.1%} | invalid {report.invalid_judgments}"
+    )
+    if not report.passed:
+        console.print(
+            "\n[yellow]The analytical score will be reported as NOT_EVALUATED, never as zero. "
+            "A judge you cannot trust produces no number at all.[/yellow]"
+        )
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "judge_model": judge.ref,
+        "provenance": "derived_judge_calibration",
+        "note": (
+            "Cases are DERIVED from real SECQUE tasks by transformations whose effect on correctness "
+            "is known by construction. They are not SECQUE tasks and are not reported as such."
+        ),
+        **report.to_json(),
+    }
+    output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    console.print(f"\nWritten to [bold]{output}[/bold]")
+
+
 if __name__ == "__main__":
     app()
