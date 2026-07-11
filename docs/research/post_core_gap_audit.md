@@ -27,6 +27,96 @@ they did.
 Three of the five could not be answered at all. The fourth — hallucination — was worse than
 unanswered: it was answered **backwards**, which is the subject of the next section.
 
+**All five are now answered from live runs.** The capability report says so, and when one of them was
+not yet run it said *that*, in those words, rather than printing a zero.
+
+---
+
+## The bug that taught the most: a setting that never existed
+
+`document_scoped` did not scope the document.
+
+`corpus.scoped_to()` was written, was correct, and had **zero callers**. The setting left the
+retriever searching all 12,013 pages and merely pasted the filing's name onto the front of the query.
+A run artifact was stamped `document_scoped: true` while nothing whatsoever had been scoped.
+
+Nothing failed. The run completed, the artifact validated, the score was plausible, and the number
+was for an experiment nobody had asked for. This is the failure mode this whole document is about: not
+a wrong number, but **a correct number answering a different question**, wearing the label of the
+right one.
+
+It was caught by the ablation, which produced *exactly* the same page recall for "document-scoped" as
+for open-corpus — because they were the same thing. That identity is the tell:
+
+| BM25 page recall | k=5 | k=10 | k=20 |
+|---|---|---|---|
+| open-corpus | 2.7 % | **4.0 %** | 7.3 % |
+| "document-scoped", as shipped | — | **4.0 %** | — |
+| document-scoped, actually scoped | 10.7 % | **18.7 %** | 27.3 % |
+
+Same retriever. Same model. Nearly **five times** the page recall, purely from making the setting mean
+what it said. `RETRIEVAL_VERSION` now exists in the evaluator fingerprint for exactly this reason: the
+retrieval pipeline moves `retrieval_required` scores without the model changing at all.
+
+### And then the fix bought nothing
+
+The end-to-end run was repeated with the scoping actually working. This is the result, and it is the
+most useful thing in this document:
+
+| | scoping bug | scoping fixed |
+|---|---|---|
+| page recall @10 | 4.0 % | **18.7 %** |
+| wrong-document failures | 9 | **0** |
+| `generation_error_after_retrieval` | 2 | **7** |
+| **answer accuracy** | 4.5 % | **2.2 %** |
+| retrieval loss | 20.2 pt | 22.5 pt |
+
+Retrieval got **4.7× better** and the answers did not improve at all.
+
+The temptation here is to write "better retrieval made the answers *worse*". That would be false, and
+it is worth saying exactly why, because it is the sort of claim a benchmark exists to prevent. Those
+accuracy figures are **4 correct answers versus 2**, out of 89 gradable questions. The 95 % confidence
+interval on the new number is `[0.0, 0.056]` — it *contains* the old one. The two are statistically
+indistinguishable, and reading a regression out of two questions would be exactly the kind of
+confident nonsense this platform is built to catch.
+
+What *is* real is the shape of the failures. `generation_error_after_retrieval` went from **2 to 7**:
+the model is now handed the correct page far more often, and it still cannot answer. The bottleneck
+did not disappear when retrieval improved — **it moved**, and it moved onto the model.
+
+So the honest conclusion is neither "the retriever was the problem" nor "the model was the problem".
+It is: *BM25 over financial prose finds the right page 19 % of the time, and when it does, this model
+converts that into an answer almost never.* Fixing one of those two would still leave you with
+nothing. A single RAG-accuracy number would have said only "4 %" both times, and would have hidden
+every part of that.
+
+---
+
+## Conversations: the number every paper reports is the one that flatters
+
+30 conversations, 120 turns, both protocols, zero errors.
+
+| | gold_history | model_history |
+|---|---|---|
+| turn accuracy | 30.8 % | 28.3 % |
+| **whole-conversation accuracy** | **0.0 %** | **0.0 %** |
+| mean first-error turn | 0.87 | 0.87 |
+| context loss | 14.5 pt | 18.0 pt |
+
+**30.8 % of turns right, and 0.0 % of conversations right all the way through.** Not one of thirty. A
+user does not experience thirty separate 30 % turns — they experience one conversation that went wrong
+somewhere, and it always did.
+
+The protocol gap is only 2.5 points, and the honest reading of that is *not* "it holds a conversation
+well". It is that a model whose mean first error lands at **turn 0.87** — before turn 1 — has almost
+nothing left to propagate. Error propagation needs a correct turn to corrupt, and there usually isn't
+one.
+
+A validity check falls out of the design and passes exactly: **turn 0 scores identically (46.7 %)
+under both protocols**, as it must, because turn 0 has no history and the two protocols therefore ask
+it the same question. The engine served 34 of them straight from cache on the second run for the same
+reason. Had that number differed, the turn-chaining would have been wrong.
+
 ---
 
 ## What the core could not see
@@ -48,10 +138,13 @@ attribution separates `retrieval_miss` (the retriever never found the page) from
 those two have opposite fixes, and a single RAG-accuracy number sends you to repair the wrong
 component.
 
-The retrieval numbers are unflattering and they are honest: BM25 page recall is **2.7 %** at k=5
-over the open corpus, **10.7 %** document-scoped, **27.3 %** at k=20. A hand-rolled BM25 over
-12,013 pages of financial prose is simply not a good retriever, and the platform says so rather
-than quietly reporting the mode that flatters it.
+The retrieval numbers are unflattering and they are honest. BM25 page recall over the open corpus is
+**2.7 %** at k=5 and **7.3 %** at k=20; document-scoped it is **10.7 %** and **27.3 %**. A hand-rolled
+BM25 over 12,013 pages of financial prose is simply not a good retriever, and both settings are
+reported rather than only the one that flatters.
+
+But the sequel above is the part that matters: **making it 4.7× better changed nothing about the
+answers.** The failure moved from the retriever to the model rather than disappearing.
 
 ### 2. There was no small business anywhere in the platform
 
@@ -184,17 +277,37 @@ different fix.
 
 ---
 
+## Built since
+
+- **OpenAI / Anthropic / Gemini / OpenRouter** — implemented, unit-tested against a mocked transport,
+  and labelled by `financebench verify-providers`, which **calls the real endpoint** rather than
+  trusting a class attribute. On this machine exactly one provider is `live_verified` — **ollama**,
+  because every real number in `runs/` came out of it. The other four are
+  `implemented_not_live_verified`: no keys exist here, so none has ever made a successful call. That
+  is *unproven*, not *broken*, and a red mark would be as much of an invention as a green one.
+- **The cross-run HTML report** — `financebench capability-report`. Self-contained by test: no
+  network, no scripts, no CDN.
+- **Coverage-gated scoring** — the Finance Capability Index is now **refused** (not asterisked) unless
+  the run actually asked the questions it claims to answer: SMB-CFO coverage, a grounding benchmark,
+  and a refusal benchmark. A FinQA-only run may not publish one, however well it scored.
+- **The prompt-injection gate** — threshold **zero**, and the only gate here that has one. Every other
+  threshold is a judgement about how much error a reviewer can absorb; this one is not an error rate
+  at all. If a row in the ledger can rewrite the model's instructions, whoever can add a row controls
+  the model. It is scored over the *attacks*, not over the whole run — diluting it by run size would
+  make a model that obeyed every attack look safer the more clean questions you added.
+
 ## Still not built
 
 Stated plainly, because a gap audit that omits its own gaps is decoration:
 
 - **SECQUE** — not implemented. When it is, the analytical score will be reported as
   `not_evaluated` where no trusted judge is configured, never as a fake zero.
-- **Tool-assisted evaluation** — the `tool_assisted` eval mode exists in the schema; the sandbox
-  does not.
-- **OpenAI / Anthropic / Gemini / OpenRouter providers** — not implemented. When they are, and no
-  API key exists on this machine, they will be labelled `implemented_not_live_verified`. A provider
-  that has never made a successful call is not a working provider, and will not be described as one.
-- **The full matched eval matrix** — qwen2.5:3b has the broadest coverage; qwen2.5:7b has a matched
-  subset. Per the mission's own rule, **model count bends before benchmark coverage does.**
-- **The self-contained HTML report** — per-run `report.html` exists; the cross-run one does not.
+- **Tool-assisted evaluation** — the `tool_assisted` eval mode, the `ToolSpec`/`ToolCall`/`ToolResult`
+  schemas and the `tool_agent_v1` prompt profile all exist and are wired into the request builder. The
+  **tools, the sandbox, and the agent loop do not.**
+- **Dense / hybrid retrieval, measured** — both retrievers are implemented; the embedding index over
+  the 12,013 pages is not yet built, so only BM25 has real numbers. Until it is, no claim is made
+  about whether dense retrieval helps.
+- **The full matched eval matrix** — qwen2.5:3b has the broadest coverage; qwen2.5:7b has a partial
+  subset and no frozen manifest pins the sample IDs yet. Per the mission's own rule, **model count
+  bends before benchmark coverage does.**
