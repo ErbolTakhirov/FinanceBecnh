@@ -29,7 +29,7 @@ from financebench.execution.engine import RunResult
 from financebench.models.base import ProviderCapabilities
 from financebench.prompts.profiles import create_prompt_profile
 from financebench.schemas.common import RunType
-from financebench.schemas.gates import GatesReport
+from financebench.schemas.gates import GateResult, GatesReport
 from financebench.schemas.manifest import AdapterStatus, DatasetManifest
 from financebench.schemas.metric import MetricAggregate, MetricResult
 from financebench.schemas.model_io import ModelSpec
@@ -516,12 +516,25 @@ def _write_report_html(
         )
         or "<tr><td colspan='3'>No capability dimensions mapped.</td></tr>"
     )
-    gate_rows = (
-        "\n".join(
-            f"<tr><td>{esc(g.gate_name)}</td><td>{g.threshold}</td><td>{g.observed}</td>"
-            f"<td class='{'pass' if g.passed else 'fail'}'>{'PASS' if g.passed else 'FAIL'}</td></tr>"
-            for g in inputs.gates.gates
+
+    def _gate_row(gate: GateResult) -> str:
+        # A gate the run had nothing to test with is NOT a failing gate, and it is not a passing one
+        # either. Rendering `passed=None` as FAIL would invent a defect; rendering it as PASS would
+        # invent a guarantee. It gets its own word.
+        if gate.skipped:
+            status, css = "NOT TESTED", "skip"
+        elif gate.passed:
+            status, css = "PASS", "pass"
+        else:
+            status, css = "FAIL", "fail"
+        observed = "&mdash;" if gate.observed is None else gate.observed
+        return (
+            f"<tr><td>{esc(gate.gate_name)}</td><td>{gate.threshold}</td><td>{observed}</td>"
+            f"<td class='{css}'>{status}</td></tr>"
         )
+
+    gate_rows = (
+        "\n".join(_gate_row(g) for g in inputs.gates.gates)
         or "<tr><td colspan='4'>Gates not evaluated (no samples scored).</td></tr>"
     )
     distribution = failure_distribution(inputs.failures)
@@ -562,6 +575,7 @@ def _write_report_html(
   .verdict {{ font-size: 1.3rem; padding: 0.75rem 1rem; background: #f0f9ff; border-left: 5px solid #0369a1; }}
   .verdict code {{ background: none; font-weight: 700; }}
   td.pass {{ color: #166534; font-weight: 600; }}
+  td.skip {{ opacity: .65; font-weight: 600; }}
   td.fail {{ color: #b91c1c; font-weight: 700; }}
 </style>
 </head>

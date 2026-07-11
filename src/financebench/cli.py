@@ -32,6 +32,7 @@ from financebench.execution.orchestration import EvalRequest, run_eval, run_id_f
 from financebench.models.base import create_provider, describe_providers, get_provider_class
 from financebench.models.verification import ProviderVerification, verify_all_providers
 from financebench.prompts.profiles import available_prompt_profiles
+from financebench.reporting import build_mission_report, load_runs
 from financebench.schemas.common import (
     DEFAULT_PROMPT_PROFILE,
     ConversationProtocol,
@@ -43,6 +44,7 @@ from financebench.schemas.model_io import ChatMessage, ModelRequest, ModelRespon
 from financebench.storage.jsonl import read_jsonl, write_model_list_json
 from financebench.utils.errors import ConfigError, ProviderError
 from financebench.utils.gitmeta import python_version
+from financebench.utils.timing import RealClock
 
 __all__ = ["app"]
 
@@ -952,6 +954,40 @@ def verify_providers(
 
     live = sum(1 for r in records if r.status is ProviderVerification.LIVE_VERIFIED)
     console.print(f"{live} provider(s) live-verified on this machine.")
+
+
+@app.command(name="capability-report")
+def capability_report(
+    runs_dir: Annotated[Path, typer.Option("--runs-dir")] = Path("runs"),
+    output: Annotated[Path, typer.Option("--output")] = Path("reports/financial_capability.html"),
+) -> None:
+    """Build the one report a human actually reads: can this model be trusted with money?
+
+    Answers the five questions this platform exists to answer — calculation, conversation,
+    retrieval and citation, small-business CFO analysis, and refusal under adversarial pressure —
+    across every real run under --runs-dir.
+
+    A question with no run behind it is reported as UNANSWERED, not as a zero. An absent measurement
+    and a failed one are different findings, and only one of them is about the model.
+    """
+    runs = load_runs(runs_dir)
+    real = [r for r in runs if r.run_type == "real"]
+    if not real:
+        _fail(f"no real runs found under {runs_dir} — a report with nothing in it is not a report")
+        return
+
+    document = build_mission_report(runs, generated_at=RealClock().now_iso())
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(document, encoding="utf-8")
+
+    console.print(f"[bold green]Report written[/bold green] to {output}")
+    console.print(f"  {len(real)} real run(s) across {len({r.model_ref for r in real})} model(s)")
+    unanswered = document.count("class='unanswered'")
+    if unanswered:
+        console.print(
+            f"  [yellow]{unanswered} of the five questions is/are UNANSWERED[/yellow] — "
+            "the report says so rather than printing a zero."
+        )
 
 
 if __name__ == "__main__":
