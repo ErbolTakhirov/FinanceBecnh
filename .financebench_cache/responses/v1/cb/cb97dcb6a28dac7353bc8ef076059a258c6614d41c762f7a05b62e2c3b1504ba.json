@@ -1,0 +1,39 @@
+{
+  "cache_key": "cb97dcb6a28dac7353bc8ef076059a258c6614d41c762f7a05b62e2c3b1504ba",
+  "written_at": "2026-07-11T07:21:42.129837Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"829\", \"numeric_value\": 829, \"unit\": \"million\", \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table\", \"row\": \"2006\"}], \"insufficient_information\": false, \"confidence\": 1, \"brief_explanation\": \"The greatest provision for income taxes in millions is found in the 2006 row of the table provided.\"}",
+    "financial_answer": {
+      "answer": "829",
+      "numeric_value": 829.0,
+      "unit": "million",
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table",
+          "row": "2006"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 1.0,
+      "brief_explanation": "The greatest provision for income taxes in millions is found in the 2006 row of the table provided."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1006,
+      "completion_tokens": 103,
+      "total_tokens": 1109
+    },
+    "latency_ms": 56903.184842999966,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-406",
+      "finish_reason": "stop"
+    }
+  }
+}

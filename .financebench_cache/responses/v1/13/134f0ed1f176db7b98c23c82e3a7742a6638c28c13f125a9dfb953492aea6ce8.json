@@ -1,0 +1,39 @@
+{
+  "cache_key": "134f0ed1f176db7b98c23c82e3a7742a6638c28c13f125a9dfb953492aea6ce8",
+  "written_at": "2026-07-11T07:23:02.453765Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"49447\", \"numeric_value\": 49447, \"unit\": \"million_usd\", \"period\": \"december 31, 2012\", \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"in millions | december 31 2012 amortized cost | december 31 2012 fair value | december 31 2012 amortized cost | fair value\", \"row\": \"(a)\"}], \"insufficient_information\": false, \"confidence\": 1, \"brief_explanation\": \"The table provides the total securities available for sale at amortized cost and fair value. The value of $49,447 million is given as the amortized cost of total securities available for sale, which excludes corporate stocks.\"}",
+    "financial_answer": {
+      "answer": "49447",
+      "numeric_value": 49447.0,
+      "unit": "million_usd",
+      "period": "december 31, 2012",
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "in millions | december 31 2012 amortized cost | december 31 2012 fair value | december 31 2012 amortized cost | fair value",
+          "row": "(a)"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 1.0,
+      "brief_explanation": "The table provides the total securities available for sale at amortized cost and fair value. The value of $49,447 million is given as the amortized cost of total securities available for sale, which excludes corporate stocks."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1461,
+      "completion_tokens": 184,
+      "total_tokens": 1645
+    },
+    "latency_ms": 80323.37199699998,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-197",
+      "finish_reason": "stop"
+    }
+  }
+}

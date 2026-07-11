@@ -1,0 +1,15 @@
+# The real core group: three benchmarks with real official data and parity-tested official metrics.
+#
+# `smoke` is deliberately NOT here. It is a pipeline fixture, not a benchmark, and putting it in a
+# group called "core" would be self-flattery.
+name: core_real
+description: >
+  FinQA, TAT-QA and FinanceReasoning — real official data, official metrics verified against the
+  real upstream evaluators (see docs/research/metric_parity.md).
+benchmarks:
+  - name: finqa
+    split: test
+  - name: tatqa
+    split: dev
+  - name: finance_reasoning
+    split: hard

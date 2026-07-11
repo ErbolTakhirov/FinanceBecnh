@@ -1,0 +1,39 @@
+{
+  "cache_key": "004777b9356867c8721ef53d702792c22b5c6f5532282273bd5ccc6f9bbbf15b",
+  "written_at": "2026-07-11T07:23:27.440900Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"168\", \"numeric_value\": 168, \"unit\": \"million\", \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"balance at march 31 2008\", \"row\": \"...\"}], \"insufficient_information\": false, \"confidence\": 0.95, \"brief_explanation\": \"The ending balance at March 31, 2008, for unrecognized tax benefits is already provided as $168 million in the table.\"}",
+    "financial_answer": {
+      "answer": "168",
+      "numeric_value": 168.0,
+      "unit": "million",
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "balance at march 31 2008",
+          "row": "..."
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The ending balance at March 31, 2008, for unrecognized tax benefits is already provided as $168 million in the table."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1345,
+      "completion_tokens": 121,
+      "total_tokens": 1466
+    },
+    "latency_ms": 57371.081812000055,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-690",
+      "finish_reason": "stop"
+    }
+  }
+}

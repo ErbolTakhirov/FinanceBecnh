@@ -1,0 +1,39 @@
+{
+  "cache_key": "73880a2f548ab94b8a4ba4c3562e17af9b23ab5f708bb014dd7f38d465981ea3",
+  "written_at": "2026-07-11T07:22:30.069072Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"6%\",\"numeric_value\": 6,\"unit\": \"%\",\"period\": \"2018\",\"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"year ended december 31 ( in millions except rates )\", \"row\": \"net interest income 2013 managed basis\"}], \"insufficient_information\": false,\"confidence\": 0.95,\"brief_explanation\": \"The CIB markets net interest income for 2018 was $3,087 million and the total managed net interest income was $55,687 million. The percentage is calculated as (3087 / 55687) * 100 = 5.54%, which rounds to 6%\"}",
+    "financial_answer": {
+      "answer": "6%",
+      "numeric_value": 6.0,
+      "unit": "%",
+      "period": "2018",
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "year ended december 31 ( in millions except rates )",
+          "row": "net interest income 2013 managed basis"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The CIB markets net interest income for 2018 was $3,087 million and the total managed net interest income was $55,687 million. The percentage is calculated as (3087 / 55687) * 100 = 5.54%, which rounds to 6%"
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 2699,
+      "completion_tokens": 168,
+      "total_tokens": 2867
+    },
+    "latency_ms": 67572.79879700002,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-296",
+      "finish_reason": "stop"
+    }
+  }
+}

@@ -198,9 +198,40 @@ def prepare(name: str) -> None:
     console.print(f"[bold green]{name} prepared.[/bold green]")
 
 
+#: The benchmarks that make up the real core group. `smoke` is deliberately absent: it is a
+#: pipeline fixture, not a benchmark, and including it in a "core" check would be self-flattery.
+CORE_BENCHMARKS: tuple[str, ...] = ("finqa", "tatqa", "finance_reasoning")
+
+
 @app.command(name="validate-dataset")
-def validate_dataset(name: str) -> None:
+def validate_dataset(
+    name: Annotated[str | None, typer.Argument()] = None,
+    all_core: Annotated[
+        bool,
+        typer.Option("--all-core", help="Validate every benchmark in the real core group."),
+    ] = False,
+) -> None:
     """Load every split of a registered benchmark and confirm every sample validates."""
+    if all_core:
+        failed = []
+        for benchmark in CORE_BENCHMARKS:
+            try:
+                _validate_one(benchmark)
+            except typer.Exit:
+                failed.append(benchmark)
+        if failed:
+            _fail(f"validation failed for: {', '.join(failed)}")
+        console.print(
+            f"[bold green]All {len(CORE_BENCHMARKS)} core benchmarks validated.[/bold green]"
+        )
+        return
+    if name is None:
+        _fail("pass a benchmark name, or --all-core")
+        return
+    _validate_one(name)
+
+
+def _validate_one(name: str) -> None:
     try:
         adapter = create_dataset(name)
     except ConfigError as exc:
