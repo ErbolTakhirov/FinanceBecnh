@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ErbolTakhirov/CFOBenchmark/schemas/result_manifest.schema.json",
+  "title": "CFOBenchmark result manifest",
+  "description": "What a submitted model result must carry to be comparable with any other. A run without a fingerprint and a sample manifest is not a result; it is an anecdote.",
+  "type": "object",
+  "required": ["run_id", "model_ref", "provider", "run_type", "evaluator_fingerprint", "benchmark_or_group", "config", "samples", "metrics"],
+  "additionalProperties": true,
+  "properties": {
+    "run_id": {"type": "string"},
+    "model_ref": {"type": "string", "description": "provider/model, e.g. ollama/qwen2.5:7b"},
+    "model_digest": {"type": "string", "description": "The exact weights. A model tag is not a version."},
+    "quantization": {"type": "string"},
+    "runtime": {"type": "string"},
+    "hardware": {"type": "string"},
+    "provider": {"type": "string"},
+    "run_type": {"enum": ["real", "mock_test"], "description": "A mock run reads the gold answers. It is never eligible for a leaderboard."},
+    "eligible_for_leaderboard": {"type": "boolean"},
+    "evaluator_fingerprint": {
+      "type": "object",
+      "description": "Two runs with different digests measured different things and MUST NOT be compared.",
+      "required": ["digest"],
+      "properties": {
+        "digest": {"type": "string"},
+        "parser_version": {"type": "string"},
+        "metric_versions": {"type": "object"},
+        "dataset_adapters": {"type": "object"},
+        "retrieval_version": {"type": "string"},
+        "scoring_version": {"type": "string"}
+      }
+    },
+    "benchmark_or_group": {"type": "string"},
+    "config": {
+      "type": "object",
+      "required": ["seed", "temperature", "prompt_profile", "eval_mode"],
+      "properties": {
+        "seed": {"type": "integer"},
+        "temperature": {"type": "number"},
+        "max_output_tokens": {"type": "integer"},
+        "prompt_profile": {"type": "string"},
+        "eval_mode": {"enum": ["context_given", "retrieval_required", "tool_assisted"]},
+        "conversation_protocol": {"enum": ["gold_history", "model_history"]}
+      }
+    },
+    "samples": {
+      "type": "array",
+      "description": "The EXACT sample ids run. A comparison across different ids is not a comparison.",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["mean", "n"],
+        "properties": {
+          "mean": {"type": ["number", "null"], "description": "null means NOT MEASURED. It never means zero."},
+          "n": {"type": "integer", "description": "Samples actually graded — excluding not-applicable ones."},
+          "ci_low": {"type": ["number", "null"]},
+          "ci_high": {"type": ["number", "null"]}
+        }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "finance_capability_index": {"type": ["number", "null"]},
+        "fci_withheld_because": {"type": ["string", "null"], "description": "If the index is null, this says why. An index is refused, not asterisked."}
+      }
+    },
+    "errors": {"type": "integer"},
+    "total_tokens": {"type": ["integer", "null"]},
+    "latency_ms_mean": {"type": ["number", "null"]}
+  }
+}

@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: "CFOBenchmark: an honest evaluation suite for financial LLMs"
+message: "If you use this software, please cite it."
+type: software
+authors:
+  - family-names: Takhirov
+    given-names: Erbol
+repository-code: "https://github.com/ErbolTakhirov/CFOBenchmark"
+license: MIT
+version: 0.1.0-rc1
+date-released: "2026-07-11"
+abstract: >
+  An evaluation suite for financial language models that reports what it measured and refuses to
+  report what it did not. It wraps FinQA, TAT-QA, FinanceReasoning, FinanceBench, ConvFinQA and
+  SECQUE, adds a deterministic small-business CFO benchmark whose gold answers come from Python
+  oracles rather than an LLM, and evaluates retrieval, conversation, tool use, and refusal under
+  adversarial pressure. Official metrics are parity-tested against the real upstream evaluators.
+  Scores that cannot be trusted are withheld rather than published with a caveat.
+keywords:
+  - financial-nlp
+  - llm-evaluation
+  - benchmark
+  - retrieval-augmented-generation
+  - hallucination-detection
