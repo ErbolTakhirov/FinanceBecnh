@@ -1,0 +1,32 @@
+{
+  "cache_key": "206f3dda479fb7e42112fc03e994c2e7184472204faa85b4020630a519cd380f",
+  "written_at": "2026-07-11T07:26:08.955138Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "content": "subtract(#0, #0)",
+    "financial_answer": {
+      "answer": "subtract(#0, #0)",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [],
+      "insufficient_information": false,
+      "confidence": null,
+      "brief_explanation": null
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1351,
+      "completion_tokens": 8,
+      "total_tokens": 1359
+    },
+    "latency_ms": 21351.306289999913,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-892",
+      "finish_reason": "stop"
+    }
+  }
+}

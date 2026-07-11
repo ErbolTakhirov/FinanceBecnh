@@ -1,0 +1,39 @@
+{
+  "cache_key": "a5afc29d81e9968bea0ef30c3baefb5466bbf1bd6ab03c7eb8a4c8f5d32d7e7a",
+  "written_at": "2026-07-11T07:26:50.517419Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"1496.5\", \"numeric_value\": 1496.5, \"unit\": \"million_usd\", \"period\": \"2019\", \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table\", \"row\": \"Total sales\"}], \"insufficient_information\": false, \"confidence\": 1, \"brief_explanation\": \"The total sales for the year ended September 30, 2019, is directly stated in the table as $1,496.5 million.\"}",
+    "financial_answer": {
+      "answer": "1496.5",
+      "numeric_value": 1496.5,
+      "unit": "million_usd",
+      "period": "2019",
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table",
+          "row": "Total sales"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 1.0,
+      "brief_explanation": "The total sales for the year ended September 30, 2019, is directly stated in the table as $1,496.5 million."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 512,
+      "completion_tokens": 125,
+      "total_tokens": 637
+    },
+    "latency_ms": 95805.19882099997,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-292",
+      "finish_reason": "stop"
+    }
+  }
+}

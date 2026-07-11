@@ -1,0 +1,32 @@
+{
+  "cache_key": "f261ee2a92c55798dd15691025df4124c6a94c88e354b33fac322f1862b58d5e",
+  "written_at": "2026-07-11T07:25:39.867660Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "content": "greater(divide(subtract(table_sum(\"masco\", none), table_sum(\"s&p 500 index\", none)), #0), const_0)",
+    "financial_answer": {
+      "answer": "greater(divide(subtract(table_sum(\"masco\", none), table_sum(\"s&p 500 index\", none)), #0), const_0)",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [],
+      "insufficient_information": false,
+      "confidence": null,
+      "brief_explanation": null
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 907,
+      "completion_tokens": 34,
+      "total_tokens": 941
+    },
+    "latency_ms": 19244.439193999824,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-469",
+      "finish_reason": "stop"
+    }
+  }
+}

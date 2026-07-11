@@ -1,0 +1,32 @@
+{
+  "cache_key": "43e2ee7abb1453b8ad02e7d039eb2fa234647c12bd6d8bf800c5e259281e53b5",
+  "written_at": "2026-07-11T07:26:17.712629Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "content": "divide(const_m1, add(table_sum(\"at december 31 , 2016\", \"total assets\"), table_average(\"at december 31 , 2012\", \"total stockholders 2019 equity\")))",
+    "financial_answer": {
+      "answer": "divide(const_m1, add(table_sum(\"at december 31 , 2016\", \"total assets\"), table_average(\"at december 31 , 2012\", \"total stockholders 2019 equity\")))",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [],
+      "insufficient_information": false,
+      "confidence": null,
+      "brief_explanation": null
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 748,
+      "completion_tokens": 52,
+      "total_tokens": 800
+    },
+    "latency_ms": 19024.341567000192,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-112",
+      "finish_reason": "stop"
+    }
+  }
+}

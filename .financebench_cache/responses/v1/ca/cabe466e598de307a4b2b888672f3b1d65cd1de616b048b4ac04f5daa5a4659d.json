@@ -1,0 +1,39 @@
+{
+  "cache_key": "cabe466e598de307a4b2b888672f3b1d65cd1de616b048b4ac04f5daa5a4659d",
+  "written_at": "2026-07-11T07:27:02.659865Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"The company has fixed-price type contracts and Other contract types which include cost plus and time and material type contracts.\", \"numeric_value\": null, \"unit\": null, \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table provided in the context\", \"row\": \"Row 2\"}], \"insufficient_information\": false, \"confidence\": 0.95, \"brief_explanation\": \"The context explicitly mentions fixed-price type contracts and Other contract types which further specify cost plus and time and material type contracts.\"}",
+    "financial_answer": {
+      "answer": "The company has fixed-price type contracts and Other contract types which include cost plus and time and material type contracts.",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table provided in the context",
+          "row": "Row 2"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The context explicitly mentions fixed-price type contracts and Other contract types which further specify cost plus and time and material type contracts."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 504,
+      "completion_tokens": 124,
+      "total_tokens": 628
+    },
+    "latency_ms": 24595.910063000018,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-652",
+      "finish_reason": "stop"
+    }
+  }
+}

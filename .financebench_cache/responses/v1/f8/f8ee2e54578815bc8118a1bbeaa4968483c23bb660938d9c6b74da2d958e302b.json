@@ -1,0 +1,39 @@
+{
+  "cache_key": "f8ee2e54578815bc8118a1bbeaa4968483c23bb660938d9c6b74da2d958e302b",
+  "written_at": "2026-07-11T07:24:50.802309Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"1.6\", \"numeric_value\": 1600, \"unit\": \"million\", \"period\": null, \"citations\": [{\"document_id\": \"166 goldman sachs 2017 form 10-k\", \"page\": null, \"table\": \"Table\", \"row\": \"stock options cancelled\"}], \"insufficient_information\": false, \"confidence\": 1, \"brief_explanation\": \"The total number of stock options cancelled in millions during the years 2017, 2016 and 2015 is 8.1 + 6.1 + 5.7 = 19.9 million.\"}",
+    "financial_answer": {
+      "answer": "1.6",
+      "numeric_value": 1600.0,
+      "unit": "million",
+      "period": null,
+      "citations": [
+        {
+          "document_id": "166 goldman sachs 2017 form 10-k",
+          "page": null,
+          "table": "Table",
+          "row": "stock options cancelled"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 1.0,
+      "brief_explanation": "The total number of stock options cancelled in millions during the years 2017, 2016 and 2015 is 8.1 + 6.1 + 5.7 = 19.9 million."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1482,
+      "completion_tokens": 149,
+      "total_tokens": 1631
+    },
+    "latency_ms": 58120.9496240001,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-174",
+      "finish_reason": "stop"
+    }
+  }
+}

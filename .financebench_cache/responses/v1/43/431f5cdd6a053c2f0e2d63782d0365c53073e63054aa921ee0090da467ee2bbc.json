@@ -1,0 +1,39 @@
+{
+  "cache_key": "431f5cdd6a053c2f0e2d63782d0365c53073e63054aa921ee0090da467ee2bbc",
+  "written_at": "2026-07-11T07:23:52.680644Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"65%\", \"numeric_value\": 65, \"unit\": \"%\", \"period\": \"december 2012\", \"citations\": [{\"document_id\": \"item 1b.\", \"page\": null, \"table\": \"properties a summary of our significant locations at december 31 , 2012 is shown in the following table.\", \"row\": \"alpharetta georgia\"}], \"insufficient_information\": false, \"confidence\": 0.95, \"brief_explanation\": \"The total square footage in Alpharetta, Georgia is 254,000 and the space that has been sublet or part of a facility restructuring is 165,000. Therefore, 65% of the square footage is not leased.\"}",
+    "financial_answer": {
+      "answer": "65%",
+      "numeric_value": 65.0,
+      "unit": "%",
+      "period": "december 2012",
+      "citations": [
+        {
+          "document_id": "item 1b.",
+          "page": null,
+          "table": "properties a summary of our significant locations at december 31 , 2012 is shown in the following table.",
+          "row": "alpharetta georgia"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The total square footage in Alpharetta, Georgia is 254,000 and the space that has been sublet or part of a facility restructuring is 165,000. Therefore, 65% of the square footage is not leased."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 942,
+      "completion_tokens": 173,
+      "total_tokens": 1115
+    },
+    "latency_ms": 50226.2363320001,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-684",
+      "finish_reason": "stop"
+    }
+  }
+}

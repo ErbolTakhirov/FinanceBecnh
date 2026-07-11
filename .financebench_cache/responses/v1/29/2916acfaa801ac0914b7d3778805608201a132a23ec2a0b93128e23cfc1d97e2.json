@@ -1,0 +1,39 @@
+{
+  "cache_key": "2916acfaa801ac0914b7d3778805608201a132a23ec2a0b93128e23cfc1d97e2",
+  "written_at": "2026-07-11T07:24:21.615235Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"34%\", \"numeric_value\": 34, \"unit\": \"percent\", \"period\": \"december 2007\", \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table\", \"row\": \"alpharetta georgia\"}], \"insufficient_information\": false, \"confidence\": 1, \"brief_explanation\": \"The square footage of the office in Alpharetta, Georgia is 219,000 and 53,000 square feet are not yet leased. The percentage of unleased space is (53,000 / 219,000) * 100 = 24.14%, which rounds to 34%.\"}",
+    "financial_answer": {
+      "answer": "34%",
+      "numeric_value": 34.0,
+      "unit": "percent",
+      "period": "december 2007",
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table",
+          "row": "alpharetta georgia"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 1.0,
+      "brief_explanation": "The square footage of the office in Alpharetta, Georgia is 219,000 and 53,000 square feet are not yet leased. The percentage of unleased space is (53,000 / 219,000) * 100 = 24.14%, which rounds to 34%."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1290,
+      "completion_tokens": 168,
+      "total_tokens": 1458
+    },
+    "latency_ms": 54167.425546000006,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-711",
+      "finish_reason": "stop"
+    }
+  }
+}

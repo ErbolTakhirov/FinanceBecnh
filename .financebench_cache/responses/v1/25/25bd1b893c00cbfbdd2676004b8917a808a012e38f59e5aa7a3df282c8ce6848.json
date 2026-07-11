@@ -1,0 +1,39 @@
+{
+  "cache_key": "25bd1b893c00cbfbdd2676004b8917a808a012e38f59e5aa7a3df282c8ce6848",
+  "written_at": "2026-07-11T07:27:13.676360Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"2019\", \"numeric_value\": 1496.5, \"unit\": \"millions\", \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Table\", \"row\": \"Total sales\"}], \"insufficient_information\": false, \"confidence\": 0.98, \"brief_explanation\": \"The total sales for each year are provided in the table and 2019 has the highest value.\"}",
+    "financial_answer": {
+      "answer": "2019",
+      "numeric_value": 1496.5,
+      "unit": "millions",
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Table",
+          "row": "Total sales"
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.98,
+      "brief_explanation": "The total sales for each year are provided in the table and 2019 has the highest value."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 510,
+      "completion_tokens": 108,
+      "total_tokens": 618
+    },
+    "latency_ms": 23158.445895999874,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-34",
+      "finish_reason": "stop"
+    }
+  }
+}

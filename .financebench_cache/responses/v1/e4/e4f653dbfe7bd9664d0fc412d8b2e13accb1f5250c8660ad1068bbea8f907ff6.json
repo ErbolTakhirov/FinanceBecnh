@@ -1,0 +1,39 @@
+{
+  "cache_key": "e4f653dbfe7bd9664d0fc412d8b2e13accb1f5250c8660ad1068bbea8f907ff6",
+  "written_at": "2026-07-11T07:26:38.063246Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:7b",
+    "content": "{\"answer\": \"The company is paid its allowable incurred costs plus a profit which can be fixed or variable depending on the contract\u2019s fee arrangement up to predetermined funding levels determined by the customer.\", \"numeric_value\": null, \"unit\": null, \"period\": null, \"citations\": [{\"document_id\": \"...\", \"page\": null, \"table\": \"Context provided\", \"row\": \"Sales included in Other contract types represent cost plus and time and material type contracts.\"}], \"insufficient_information\": false, \"confidence\": 0.9, \"brief_explanation\": \"The context explains the nature of cost-plus contracts but does not provide specific numerical values for payments on such contracts.\"}",
+    "financial_answer": {
+      "answer": "The company is paid its allowable incurred costs plus a profit which can be fixed or variable depending on the contract\u2019s fee arrangement up to predetermined funding levels determined by the customer.",
+      "numeric_value": null,
+      "unit": null,
+      "period": null,
+      "citations": [
+        {
+          "document_id": "...",
+          "page": null,
+          "table": "Context provided",
+          "row": "Sales included in Other contract types represent cost plus and time and material type contracts."
+        }
+      ],
+      "insufficient_information": false,
+      "confidence": 0.9,
+      "brief_explanation": "The context explains the nature of cost-plus contracts but does not provide specific numerical values for payments on such contracts."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 510,
+      "completion_tokens": 142,
+      "total_tokens": 652
+    },
+    "latency_ms": 83379.345458,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-631",
+      "finish_reason": "stop"
+    }
+  }
+}
