@@ -1,0 +1,19 @@
+# OpenRouter — one key, many models. Requires OPENROUTER_API_KEY.
+#
+# `model` is OpenRouter's fully-qualified id, e.g. "anthropic/claude-sonnet-4" or
+# "meta-llama/llama-3.3-70b-instruct". Capabilities are reported conservatively because they depend
+# entirely on which model you routed to; see src/financebench/models/openai.py.
+#
+# NOT LIVE-VERIFIED in this repository — no OpenRouter key exists on the machine this was built on.
+provider: openrouter
+model: meta-llama/llama-3.3-70b-instruct
+
+generation:
+  temperature: 0
+  max_output_tokens: 1024
+  timeout_seconds: 120
+
+runtime:
+  concurrency: 8
+  retries: 4
+  cache: true

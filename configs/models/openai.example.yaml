@@ -1,0 +1,22 @@
+# OpenAI. Requires OPENAI_API_KEY in the environment — it is never read from this file, and never
+# written into a run artifact.
+#
+#   export OPENAI_API_KEY=sk-...
+#   financebench verify-providers          # confirms the key actually works before you spend money
+#   financebench eval --benchmark finqa --model-config configs/models/openai.example.yaml
+#
+# NOT LIVE-VERIFIED in this repository: no OpenAI key exists on the machine this was built on, so
+# this provider has never made a successful call here. It is implemented and unit-tested against a
+# mocked transport. `verify-providers` will tell you the truth for YOUR machine.
+provider: openai
+model: gpt-4o-mini
+
+generation:
+  temperature: 0
+  max_output_tokens: 1024
+  timeout_seconds: 120
+
+runtime:
+  concurrency: 8          # a cloud API is IO-bound, unlike local inference
+  retries: 4
+  cache: true

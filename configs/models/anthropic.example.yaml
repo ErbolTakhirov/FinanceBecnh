@@ -1,0 +1,20 @@
+# Anthropic. Requires ANTHROPIC_API_KEY.
+#
+# Note this API does NOT speak the OpenAI dialect: the system prompt is a top-level parameter and
+# `max_tokens` is mandatory. The provider handles both (see src/financebench/models/anthropic.py);
+# it matters here only because `max_output_tokens` below is not optional the way it is elsewhere.
+#
+# NOT LIVE-VERIFIED in this repository — no Anthropic key exists on the machine this was built on.
+# Run `financebench verify-providers` to find out the truth for your own.
+provider: anthropic
+model: claude-haiku-4-5-20251001
+
+generation:
+  temperature: 0
+  max_output_tokens: 1024
+  timeout_seconds: 120
+
+runtime:
+  concurrency: 8
+  retries: 4
+  cache: true

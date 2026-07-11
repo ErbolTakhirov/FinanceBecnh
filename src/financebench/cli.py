@@ -30,6 +30,7 @@ from financebench.datasets.base import available_datasets, create_dataset
 from financebench.execution.cache import ResponseCache
 from financebench.execution.orchestration import EvalRequest, run_eval, run_id_for
 from financebench.models.base import create_provider, describe_providers, get_provider_class
+from financebench.models.verification import ProviderVerification, verify_all_providers
 from financebench.prompts.profiles import available_prompt_profiles
 from financebench.schemas.common import (
     DEFAULT_PROMPT_PROFILE,
@@ -899,6 +900,58 @@ def cache_clear(
         raise typer.Exit(code=1)
     removed = cache.clear()
     console.print(f"Removed {removed} cached responses.")
+
+
+@app.command(name="verify-providers")
+def verify_providers(
+    output: Annotated[
+        Path,
+        typer.Option("--output", help="Where to write the verification report."),
+    ] = Path("reports/provider_verification.json"),
+) -> None:
+    """Find out which providers actually work — by calling them.
+
+    Three outcomes, and they are three different things:
+
+    \b
+      live_verified                  a real call was made and a real answer came back
+      implemented_not_live_verified  no key, so no call was ever made. Unproven, NOT broken.
+      unreachable                    a key exists, the call was attempted, and it failed
+
+    A provider with no key is never marked as failing. There is nothing wrong with it — we simply
+    have no way to find out, and a red mark would be as much of an invention as a green one.
+    """
+    records = asyncio.run(verify_all_providers())
+
+    table = Table("Provider", "Status", "Detail")
+    colours = {
+        ProviderVerification.LIVE_VERIFIED: "green",
+        ProviderVerification.IMPLEMENTED_NOT_LIVE_VERIFIED: "yellow",
+        ProviderVerification.UNREACHABLE: "red",
+        ProviderVerification.NOT_A_MODEL: "dim",
+    }
+    for record in sorted(records, key=lambda r: r.provider):
+        colour = colours[record.status]
+        table.add_row(
+            record.provider,
+            f"[{colour}]{record.status.value}[/{colour}]",
+            record.detail[:90],
+        )
+    console.print(table)
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "note": (
+            "'implemented_not_live_verified' means no API key was present, so no call was ever "
+            "made. It is not a failure. Only 'live_verified' means the provider actually worked."
+        ),
+        "providers": [record.to_json() for record in sorted(records, key=lambda r: r.provider)],
+    }
+    output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    console.print(f"\nWritten to [bold]{output}[/bold]")
+
+    live = sum(1 for r in records if r.status is ProviderVerification.LIVE_VERIFIED)
+    console.print(f"{live} provider(s) live-verified on this machine.")
 
 
 if __name__ == "__main__":

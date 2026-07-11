@@ -1,0 +1,15 @@
+# Google Gemini, via its OpenAI-compatibility endpoint. Requires GEMINI_API_KEY.
+#
+# NOT LIVE-VERIFIED in this repository — no Gemini key exists on the machine this was built on.
+provider: gemini
+model: gemini-2.5-flash
+
+generation:
+  temperature: 0
+  max_output_tokens: 1024
+  timeout_seconds: 120
+
+runtime:
+  concurrency: 8
+  retries: 4
+  cache: true
