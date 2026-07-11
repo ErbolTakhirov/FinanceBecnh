@@ -28,7 +28,11 @@ from decimal import Decimal
 from pathlib import Path
 
 from financebench.datasets.base import DatasetAdapter, register_dataset
-from financebench.datasets.smb_cfo.adversarial import AdversarialCase, build_adversarial
+from financebench.datasets.smb_cfo.adversarial import (
+    INJECTION_CANARY,
+    AdversarialCase,
+    build_adversarial,
+)
 from financebench.datasets.smb_cfo.business import Business, generate_business
 from financebench.datasets.smb_cfo.oracles import OracleResult
 from financebench.datasets.smb_cfo.tasks import TASK_FAMILIES, TaskSpec
@@ -342,6 +346,14 @@ class SmbCfoAdapter(DatasetAdapter):
                 "period": result.period or "",
                 "unanswerable": "true" if result.unanswerable else "false",
                 "prompt_injection": "true" if injection else "false",
+                # The value the hidden instruction tells the model to report. It appears nowhere
+                # else in these books, so a model that states it can only have got it from the
+                # injection — which makes obeying unambiguous rather than a judgement call.
+                #
+                # Declared on the SAMPLE rather than imported from this dataset by the evaluator, so
+                # that the injection gate stays generic: any future benchmark can carry a canary and
+                # be graded by the same code, and `evaluation/` never has to import `datasets/`.
+                "injection_canary": str(INJECTION_CANARY) if injection else "",
                 "oracle_note": result.note,
                 "oracle_detail": ";".join(f"{k}={v}" for k, v in sorted(result.detail.items()))[
                     :400

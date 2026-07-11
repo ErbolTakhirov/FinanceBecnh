@@ -24,7 +24,7 @@ not a mock. Otherwise it is ``None`` — never a number with an asterisk.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from financebench.evaluation.capability_map import CAPABILITY_WEIGHTS, CapabilityDimension
@@ -35,8 +35,15 @@ from financebench.evaluation.failures import (
 )
 from financebench.schemas.common import EvalMode
 from financebench.schemas.metric import MetricAggregate
+from financebench.schemas.sample import CanonicalSample
 
-__all__ = ["MIN_DIMENSIONS_FOR_FCI", "FinanceScores", "compute_scores", "reliability_penalty"]
+__all__ = [
+    "MIN_DIMENSIONS_FOR_FCI",
+    "FinanceScores",
+    "RunCoverage",
+    "compute_scores",
+    "reliability_penalty",
+]
 
 #: An index built from one dimension is not an index. Below this, the FCI is withheld.
 MIN_DIMENSIONS_FOR_FCI = 3
@@ -71,6 +78,51 @@ def reliability_penalty(failures: list[FailureRecord], n_scored: int) -> float:
 
 
 @dataclass(frozen=True)
+class RunCoverage:
+    """What a run actually *tested* — which is what decides what it is allowed to claim.
+
+    The Finance Capability Index is a statement about a model's financial capability in general. A
+    FinQA-only run cannot support that statement no matter how high it scores, and the honest
+    response is to **refuse the index**, not to publish one with a footnote. Nobody reads the
+    footnote; they read the number.
+
+    So an FCI requires the run to have actually asked the three questions that a good FinQA score
+    says nothing about: can it find its own evidence, can it advise a real business, and does it know
+    when to say "I can't tell". A model can be excellent at table arithmetic and fail all three.
+    """
+
+    benchmarks: frozenset[str] = frozenset()
+    has_grounding: bool = False
+    """A benchmark where the model must ground its answer in a real document."""
+    has_refusal: bool = False
+    """A benchmark containing questions that genuinely cannot be answered."""
+    has_smb_cfo: bool = False
+    """The small-business CFO benchmark — the mission's actual subject."""
+    has_conversation: bool = False
+    has_bilingual: bool = False
+    n_injection_samples: int = 0
+
+    @classmethod
+    def of(cls, samples: Sequence[CanonicalSample]) -> RunCoverage:
+        """Read coverage off the samples themselves rather than off a list of benchmark names.
+
+        Deliberate: a future grounded benchmark, or a future adversarial one, then counts
+        automatically — coverage is a property of what was *asked*, not of what it was called.
+        """
+        return cls(
+            benchmarks=frozenset(sample.benchmark for sample in samples),
+            has_grounding=any("evidence_grounding" in s.capability_tags for s in samples),
+            has_refusal=any(s.evaluation.should_refuse for s in samples),
+            has_smb_cfo=any(s.benchmark == "smb_cfo" for s in samples),
+            has_conversation=any("conversation" in s.capability_tags for s in samples),
+            has_bilingual=any("bilingual" in s.capability_tags for s in samples),
+            n_injection_samples=sum(
+                1 for s in samples if s.metadata.get("prompt_injection") == "true"
+            ),
+        )
+
+
+@dataclass(frozen=True)
 class FinanceScores:
     """The top-level numbers for one run. ``None`` means "not measured", never "zero"."""
 
@@ -79,6 +131,17 @@ class FinanceScores:
     rag_score: float | None = None
     agent_score: float | None = None
     multimodal_score: float | None = None
+
+    # -- sub-scores. Reported separately because they are different capabilities, and a model can be
+    # strong at one and useless at another. Averaging them into a headline is how a benchmark
+    # certifies a model for a job it cannot do.
+    smb_cfo_score: float | None = None
+    conversation_score: float | None = None
+    grounding_score: float | None = None
+    analysis_score: float | None = None
+    refusal_score: float | None = None
+    bilingual_score: float | None = None
+
     fci: float | None = None
     fci_withheld_because: str | None = None
     reliability_penalty: float = 1.0
@@ -90,6 +153,12 @@ class FinanceScores:
             "financial_rag_score": self.rag_score,
             "financial_agent_score": self.agent_score,
             "multimodal_finance_score": self.multimodal_score,
+            "smb_cfo_score": self.smb_cfo_score,
+            "conversation_score": self.conversation_score,
+            "grounding_score": self.grounding_score,
+            "analysis_score": self.analysis_score,
+            "refusal_score": self.refusal_score,
+            "bilingual_score": self.bilingual_score,
             "finance_capability_index": self.fci,
             "fci_withheld_because": self.fci_withheld_because,
             "reliability_penalty": round(self.reliability_penalty, 4),
@@ -112,6 +181,48 @@ def _weighted_geometric_mean(scores: Mapping[CapabilityDimension, float]) -> flo
     return math.exp(log_sum / total_weight)
 
 
+def _fci_withheld_because(
+    *,
+    is_mock: bool,
+    n_dimensions: int,
+    any_critical_gate_failed: bool,
+    coverage: RunCoverage,
+) -> str | None:
+    """Why this run may not publish a Finance Capability Index — or ``None`` if it may.
+
+    Order matters only for which reason gets reported first; any one of them is disqualifying.
+    """
+    if is_mock:
+        return "the mock provider was used — no model was evaluated"
+    if n_dimensions < MIN_DIMENSIONS_FOR_FCI:
+        return (
+            f"only {n_dimensions} capability dimension(s) had coverage "
+            f"(minimum {MIN_DIMENSIONS_FOR_FCI}); an index built from one dimension is not an index"
+        )
+    if any_critical_gate_failed:
+        return (
+            "a critical gate failed — a single index would let a strong average hide the kind of "
+            "error that is not a near-miss in finance"
+        )
+    if not coverage.has_smb_cfo:
+        return (
+            "no SMB-CFO coverage — this index claims financial capability, and every other "
+            "benchmark here is built on public-company filings. A model can be excellent at 10-K "
+            "arithmetic and unable to tell a small business when it runs out of money"
+        )
+    if not coverage.has_grounding:
+        return (
+            "no grounding benchmark ran — every question handed the model its evidence. Nothing "
+            "here shows it can find that evidence in a real document, which is most of the job"
+        )
+    if not coverage.has_refusal:
+        return (
+            "no refusal benchmark ran — nothing here asked a question the data cannot answer, so "
+            "nothing here shows the model would decline instead of inventing a figure"
+        )
+    return None
+
+
 def compute_scores(
     *,
     eval_mode: EvalMode,
@@ -121,8 +232,19 @@ def compute_scores(
     any_critical_gate_failed: bool,
     is_mock: bool,
     has_multimodal_coverage: bool = False,
+    coverage: RunCoverage | None = None,
+    benchmark_scores: Mapping[str, float] | None = None,
 ) -> FinanceScores:
-    """Compute the top-level scores for a run."""
+    """Compute the top-level scores for a run.
+
+    ``benchmark_scores`` maps a benchmark name to the mean of its preferred metric. It exists for
+    the one sub-score that is **not** a capability dimension: SMB-CFO is a *benchmark*, and its
+    questions are tagged ``calculation`` like FinQA's, so reading its score off the
+    numerical-accuracy dimension would report FinQA's arithmetic and label it small-business
+    advice.
+    """
+    coverage = coverage or RunCoverage()
+    benchmark_scores = benchmark_scores or {}
     present = {
         dimension: aggregate.mean
         for dimension, aggregate in capabilities.items()
@@ -138,22 +260,13 @@ def compute_scores(
 
     penalty = reliability_penalty(failures, n_scored)
 
-    withheld: str | None = None
-    fci: float | None = None
-    if is_mock:
-        withheld = "the mock provider was used — no model was evaluated"
-    elif len(present) < MIN_DIMENSIONS_FOR_FCI:
-        withheld = (
-            f"only {len(present)} capability dimension(s) had coverage "
-            f"(minimum {MIN_DIMENSIONS_FOR_FCI}); an index built from one dimension is not an index"
-        )
-    elif any_critical_gate_failed:
-        withheld = (
-            "a critical gate failed — a single index would let a strong average hide the kind of "
-            "error that is not a near-miss in finance"
-        )
-    else:
-        fci = round(_weighted_geometric_mean(present) * penalty, 4)
+    withheld = _fci_withheld_because(
+        is_mock=is_mock,
+        n_dimensions=len(present),
+        any_critical_gate_failed=any_critical_gate_failed,
+        coverage=coverage,
+    )
+    fci = None if withheld else round(_weighted_geometric_mean(present) * penalty, 4)
 
     return FinanceScores(
         eval_mode=eval_mode,
@@ -161,6 +274,14 @@ def compute_scores(
         rag_score=rag,
         agent_score=agent,
         multimodal_score=overall if has_multimodal_coverage else None,
+        # Each sub-score is the capability dimension that measures it, and is `None` — not zero —
+        # when the run contained nothing that could measure it.
+        smb_cfo_score=benchmark_scores.get("smb_cfo"),
+        conversation_score=present.get(CapabilityDimension.CONVERSATION_CONSISTENCY),
+        grounding_score=present.get(CapabilityDimension.DOCUMENT_GROUNDING),
+        analysis_score=present.get(CapabilityDimension.ANALYTICAL_INSIGHT),
+        refusal_score=present.get(CapabilityDimension.CALIBRATION_AND_REFUSAL),
+        bilingual_score=present.get(CapabilityDimension.BILINGUAL_EN_RU),
         fci=fci,
         fci_withheld_because=withheld,
         reliability_penalty=penalty,

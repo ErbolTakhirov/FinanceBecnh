@@ -25,7 +25,7 @@ from financebench.evaluation.failures import (
 )
 from financebench.evaluation.gates import evaluate_gates, verdict_for
 from financebench.evaluation.refusal import declined
-from financebench.evaluation.scoring import compute_scores
+from financebench.evaluation.scoring import RunCoverage, compute_scores
 from financebench.execution.cache import ResponseCache
 from financebench.execution.engine import RunEngine, RunResult
 from financebench.models.base import ModelProvider, get_provider_class
@@ -312,7 +312,26 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         evaluated_samples, preferred_by_sample, config.conversation_protocol
     )
 
-    gates = evaluate_gates(failures=failures, n_scored=n_scored, numeric_accuracy=numeric_accuracy)
+    # Coverage decides what this run is ALLOWED to claim, not just what it scored. Read off the
+    # samples themselves, so a future grounded or adversarial benchmark counts automatically.
+    coverage = RunCoverage.of(evaluated_samples)
+
+    # Per-benchmark means, for the one sub-score that is a benchmark rather than a capability.
+    by_benchmark: dict[str, list[float]] = {}
+    for scored_result in preferred_results:
+        if scored_result.passed is None:
+            continue
+        by_benchmark.setdefault(sample_by_id[scored_result.sample_id].benchmark, []).append(
+            1.0 if scored_result.passed else 0.0
+        )
+    benchmark_scores = {name: sum(v) / len(v) for name, v in by_benchmark.items() if v}
+
+    gates = evaluate_gates(
+        failures=failures,
+        n_scored=n_scored,
+        numeric_accuracy=numeric_accuracy,
+        n_injection_samples=coverage.n_injection_samples,
+    )
     is_mock = run_type is RunType.MOCK_TEST
     scores = compute_scores(
         eval_mode=config.eval_mode,
@@ -322,6 +341,8 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         any_critical_gate_failed=bool(gates.any_critical_gate_failed),
         is_mock=is_mock,
         has_multimodal_coverage=any(s.context.images for s in evaluated_samples),
+        coverage=coverage,
+        benchmark_scores=benchmark_scores,
     )
     # `a or b or c` would be wrong here: a legitimate score of 0.0 is FALSY in Python, so a model
     # that scored zero collapses to None and gets reported as NOT_EVALUATED — making the worst

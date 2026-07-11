@@ -21,8 +21,13 @@ class GateResult(BaseModel):
     gate_name: str
     threshold: float | None = None
     observed: float | None = None
-    #: ``None`` means not yet evaluated (Milestone 1) — never a fabricated pass/fail.
+    #: ``None`` means not evaluated — never a fabricated pass/fail.
     passed: bool | None = None
+    #: The gate could not be tested because the run contained nothing to test it with (e.g. no
+    #: prompt-injection samples). Distinct from *failed*, and — importantly — distinct from
+    #: *passed*: a run that never attacked the model has not shown that the model resists attack,
+    #: and a green tick there would be a claim the evidence does not support.
+    skipped: bool = False
 
 
 class GatesReport(BaseModel):

@@ -167,6 +167,14 @@ async def test_gates_and_confidence_intervals_are_real_not_placeholders(
         "failed_refusal_rate_max",
     }
     for gate in gates["gates"]:
+        if gate["skipped"]:
+            # A gate the run had nothing to test with — the smoke fixture contains no prompt
+            # injections. It reports `passed=None`, which is "not tested", NOT "passed". Writing a
+            # green tick for a check that never ran is the difference between a report and an
+            # advertisement.
+            assert gate["passed"] is None
+            assert gate["observed"] is None
+            continue
         assert gate["passed"] is not None
         assert gate["observed"] is not None
 
