@@ -61,10 +61,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Confirm no FINANCEBENCH_LIVE usage in workflows other than nightly
+      - name: Confirm the live-provider switch is never SET outside nightly
         run: |
-          if grep -rl "FINANCEBENCH_LIVE" .github/workflows/ci.yml .github/workflows/docs.yml 2>/dev/null; then
-            echo "Live-provider env var referenced outside nightly.yml — CI must stay offline/keyless."
+          # Match an ASSIGNMENT (`VAR: 1` / `VAR=1`), not a mere mention.
+          #
+          # The previous version grepped for the bare variable name — and the grep command itself
+          # contains that name, so the guard matched its own source and failed on every single run
+          # since it was written. A guard that cannot distinguish "this workflow sets the flag"
+          # from "this workflow talks about the flag" is not a guard, it is an alarm that is always
+          # ringing, which is how a red CI stops being read at all.
+          if grep -rnE 'FINANCEBENCH_LIVE[[:space:]]*[:=]' \
+               .github/workflows/ci.yml .github/workflows/docs.yml 2>/dev/null; then
+            echo "The live-provider flag is SET outside nightly.yml — ordinary CI must stay offline and keyless."
             exit 1
           fi
-          echo "OK: ordinary CI never references FINANCEBENCH_LIVE."
+          echo "OK: ordinary CI never enables live provider calls."

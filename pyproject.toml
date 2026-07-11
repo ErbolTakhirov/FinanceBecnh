@@ -47,6 +47,10 @@ dependencies = [
     "sympy>=1.12",
     "scipy>=1.11",
     "numpy>=1.26",
+    # Retrieval over real SEC filings needs to read them. pypdf is pure-Python and BSD; some real
+    # 10-K PDFs are AES-encrypted, which pypdf can only open with `cryptography` present.
+    "pypdf>=4.0",
+    "cryptography>=3.1",
 ]
 
 [project.optional-dependencies]
