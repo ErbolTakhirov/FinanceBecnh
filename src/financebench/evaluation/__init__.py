@@ -8,7 +8,7 @@ Milestone 1 foundation both of those build on.
 from __future__ import annotations
 
 from financebench.evaluation import native as _native  # noqa: F401  (registers native metrics)
-from financebench.evaluation.benchmark_metrics import metrics_for_benchmark, preferred_metric_name
+from financebench.evaluation.benchmark_metrics import metrics_for_run, preferred_metric_name
 from financebench.evaluation.capability_map import (
     CAPABILITY_WEIGHTS,
     CapabilityDimension,
@@ -20,7 +20,7 @@ __all__ = [
     "CAPABILITY_WEIGHTS",
     "CapabilityDimension",
     "dimensions_for_sample",
-    "metrics_for_benchmark",
+    "metrics_for_run",
     "preferred_metric_name",
     "rollup_capabilities",
 ]

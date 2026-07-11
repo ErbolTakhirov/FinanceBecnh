@@ -394,9 +394,12 @@ def _stage_finqa_fixture_as_default_data_dir(
     monkeypatch.chdir(tmp_path)
 
 
-def test_eval_finqa_reports_both_generic_and_native_metrics(
+def test_a_direct_answer_finqa_run_reports_our_metric_and_not_the_official_ones(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The default profile asks for a number, so FinQA's official (program-based) metrics are not
+    computable. They must be *absent*, not reported as zero — the model was never asked for a
+    program, and a 0.0 there would be a fabricated result."""
     _stage_finqa_fixture_as_default_data_dir(tmp_path, monkeypatch)
     runs_dir = tmp_path / "runs"
     result = runner.invoke(
@@ -417,8 +420,11 @@ def test_eval_finqa_reports_both_generic_and_native_metrics(
     assert result.exit_code == 0, result.output
     run_dir = next(runs_dir.iterdir())
     metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
-    assert set(metrics) == {"exact_match", "finqa_execution_accuracy"}
-    assert metrics["finqa_execution_accuracy"]["mean"] == 1.0
+
+    assert set(metrics) == {"exact_match", "finqa_answer_accuracy"}
+    assert metrics["finqa_answer_accuracy"]["mean"] == 1.0
+    assert "finqa_program_accuracy" not in metrics
+    assert "finqa_execution_accuracy" not in metrics
 
 
 def test_eval_max_samples_truncates_and_still_scores_correctly(

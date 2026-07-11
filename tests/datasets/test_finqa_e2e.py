@@ -16,7 +16,7 @@ import pytest
 
 from financebench.datasets.finqa.adapter import FinQAAdapter
 from financebench.evaluation.native.finqa import (
-    FinQAExecutionAccuracy,
+    FinQAAnswerAccuracy,
     execute_program,
     str_to_num_finqa,
 )
@@ -116,7 +116,8 @@ def test_str_to_num_handles_percent_and_const_encodings() -> None:
     assert str_to_num_finqa("12%") == pytest.approx(0.12)
     assert str_to_num_finqa("const_100") == 100.0
     assert str_to_num_finqa("const_m1") == -1.0
-    assert str_to_num_finqa("not a number") is None
+    # FinQA's own sentinel, not None — the official code compares against this string.
+    assert str_to_num_finqa("not a number") == "n/a"
 
 
 @pytest.mark.parametrize("record", _raw_records(), ids=lambda r: r["id"])
@@ -169,7 +170,7 @@ def test_execute_program_returns_none_for_unknown_table_row() -> None:
 
 
 @pytest.mark.asyncio
-async def test_echo_gold_scores_perfectly_with_the_native_metric(tmp_path: Path) -> None:
+async def test_echo_gold_scores_perfectly_with_the_answer_metric(tmp_path: Path) -> None:
     samples = _adapter().load("test")
     result = await RunEngine().run(
         samples=samples,
@@ -180,7 +181,7 @@ async def test_echo_gold_scores_perfectly_with_the_native_metric(tmp_path: Path)
     )
     assert result.n_errors == 0
 
-    metric = FinQAExecutionAccuracy()
+    metric = FinQAAnswerAccuracy()
     scores = [
         metric.score(sample, prediction)
         for sample, prediction in zip(samples, result.predictions, strict=True)
@@ -198,7 +199,7 @@ async def test_always_wrong_scores_zero_with_the_native_metric(tmp_path: Path) -
         cache=ResponseCache(tmp_path),
         provider=MockProvider(oracle=build_mock_oracle(samples)),
     )
-    metric = FinQAExecutionAccuracy()
+    metric = FinQAAnswerAccuracy()
     scores = [
         metric.score(sample, prediction)
         for sample, prediction in zip(samples, result.predictions, strict=True)
@@ -216,7 +217,7 @@ async def test_refuse_profile_is_scored_as_no_extractable_number(tmp_path: Path)
         cache=ResponseCache(tmp_path),
         provider=MockProvider(oracle=build_mock_oracle(samples)),
     )
-    metric = FinQAExecutionAccuracy()
+    metric = FinQAAnswerAccuracy()
     scores = [
         metric.score(sample, prediction)
         for sample, prediction in zip(samples, result.predictions, strict=True)

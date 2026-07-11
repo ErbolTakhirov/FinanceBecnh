@@ -15,7 +15,7 @@ from pathlib import Path
 from financebench import __version__
 from financebench.config.model_config import ModelConfigFile
 from financebench.datasets.base import create_dataset
-from financebench.evaluation.benchmark_metrics import metrics_for_benchmark, preferred_metric_name
+from financebench.evaluation.benchmark_metrics import metrics_for_run, preferred_metric_name
 from financebench.evaluation.capability_map import rollup_capabilities
 from financebench.execution.cache import ResponseCache
 from financebench.execution.engine import RunEngine, RunResult
@@ -141,20 +141,22 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
     # run_result.samples is the (possibly --max-samples-truncated) list actually run, 1:1 with
     # run_result.predictions — score and report against *that*, not the pre-truncation `samples`.
     evaluated_samples = run_result.samples
+    profile = config.prompt_profile
     all_metric_results: list[MetricResult] = []
     for sample, prediction in zip(evaluated_samples, run_result.predictions, strict=True):
-        for metric in metrics_for_benchmark(sample.benchmark):
+        for metric in metrics_for_run(sample.benchmark, profile):
             all_metric_results.append(metric.score(sample, prediction))
     metric_results = tuple(all_metric_results)
 
     # Every applicable metric is recorded (metric_details.jsonl/metrics.json), but only the
-    # "preferred" one per sample — a benchmark's own native metric where it has one, else
-    # exact_match — feeds the capability-dimension rollup.
+    # "preferred" one per sample — the benchmark's official metric where the prompt profile makes
+    # one computable, else our own — feeds the capability-dimension rollup.
     sample_by_id = {sample.sample_id: sample for sample in evaluated_samples}
     preferred_results = tuple(
         result
         for result in metric_results
-        if result.metric_name == preferred_metric_name(sample_by_id[result.sample_id].benchmark)
+        if result.metric_name
+        == preferred_metric_name(sample_by_id[result.sample_id].benchmark, profile)
     )
     capability_aggregates = rollup_capabilities(evaluated_samples, preferred_results)
 
