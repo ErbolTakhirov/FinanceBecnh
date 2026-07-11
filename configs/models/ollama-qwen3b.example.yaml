@@ -1,0 +1,14 @@
+# The small local model — fits entirely in a 4 GB GPU, so it is several times faster than the 7B.
+# Useful as a second REAL model for a paired comparison, and for iterating on the pipeline.
+provider: ollama
+model: qwen2.5:3b
+
+generation:
+  temperature: 0
+  max_output_tokens: 512
+  timeout_seconds: 180
+
+runtime:
+  concurrency: 4
+  retries: 3
+  cache: true

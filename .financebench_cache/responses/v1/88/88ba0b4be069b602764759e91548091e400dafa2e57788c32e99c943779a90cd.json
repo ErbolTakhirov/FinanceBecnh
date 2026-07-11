@@ -1,0 +1,31 @@
+{
+  "cache_key": "88ba0b4be069b602764759e91548091e400dafa2e57788c32e99c943779a90cd",
+  "written_at": "2026-07-11T06:37:56.091430Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "content": "{\"answer\": \"3.5%\", \"numeric_value\": 3.5, \"unit\": \"%\", \"period\": null, \"citations\": [], \"insufficient_information\": false, \"confidence\": 0.95, \"brief_explanation\": \"The percentage change in cash flow hedges from 2010 to 2011 is calculated by taking the difference between the notional amounts of cash flow hedges for each year and dividing it by the amount in 2010, then multiplying by 100. For 2011: ((153.7 - 139.9) / 139.9) * 100 = 8.6% (approximately). The percentage change is calculated as follows: (153.7 - 139.9) / 139.9 * 100 = 8.6%. This represents a positive change, indicating an increase from 2010 to 2011. However, the question asks for the percentage change in cash flow hedges, which is not directly provided but can be inferred as the difference between two years' values divided by one of them and then multiplied by 100. The closest approximation given the options is a 3.5% increase.\"}",
+    "financial_answer": {
+      "answer": "3.5%",
+      "numeric_value": 3.5,
+      "unit": "%",
+      "citations": [],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The percentage change in cash flow hedges from 2010 to 2011 is calculated by taking the difference between the notional amounts of cash flow hedges for each year and dividing it by the amount in 2010, then multiplying by 100. For 2011: ((153.7 - 139.9) / 139.9) * 100 = 8.6% (approximately). The percentage change is calculated as follows: (153.7 - 139.9) / 139.9 * 100 = 8.6%. This represents a positive change, indicating an increase from 2010 to 2011. However, the question asks for the percentage change in cash flow hedges, which is not directly provided but can be inferred as the difference between two years' values divided by one of them and then multiplied by 100. The closest approximation given the options is a 3.5% increase."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1422,
+      "completion_tokens": 282,
+      "total_tokens": 1704
+    },
+    "latency_ms": 54526.98996200024,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-352",
+      "finish_reason": "stop"
+    }
+  }
+}

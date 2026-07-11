@@ -1,0 +1,16 @@
+# vLLM speaks the OpenAI dialect, so it needs no provider of its own:
+#
+#   vllm serve Qwen/Qwen2.5-7B-Instruct --port 8000
+#   export FINANCEBENCH_OPENAI_COMPATIBLE_BASE_URL=http://localhost:8000/v1
+provider: openai_compatible
+model: Qwen/Qwen2.5-7B-Instruct
+
+generation:
+  temperature: 0
+  max_output_tokens: 512
+  timeout_seconds: 300
+
+runtime:
+  concurrency: 8          # vLLM batches well — unlike Ollama, more concurrency really does help
+  retries: 3
+  cache: true

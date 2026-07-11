@@ -28,15 +28,15 @@ from financebench.config.benchmark_group import load_benchmark_group
 from financebench.config.model_config import ModelConfigFile, load_model_config
 from financebench.datasets.base import available_datasets, create_dataset
 from financebench.execution.cache import ResponseCache
-from financebench.execution.orchestration import EvalRequest, run_eval
-from financebench.models.base import describe_providers, get_provider_class
-from financebench.schemas.common import RunType
+from financebench.execution.orchestration import EvalRequest, run_eval, run_id_for
+from financebench.models.base import create_provider, describe_providers, get_provider_class
+from financebench.prompts.profiles import available_prompt_profiles
+from financebench.schemas.common import DEFAULT_PROMPT_PROFILE, EvalMode, RunType
 from financebench.schemas.leaderboard import LeaderboardRecord
-from financebench.schemas.model_io import ChatMessage, ModelRequest, ModelResponse, Role
+from financebench.schemas.model_io import ChatMessage, ModelRequest, ModelResponse, ModelSpec, Role
 from financebench.storage.jsonl import read_jsonl, write_model_list_json
-from financebench.utils.errors import ConfigError
+from financebench.utils.errors import ConfigError, ProviderError
 from financebench.utils.gitmeta import python_version
-from financebench.utils.ids import make_run_id
 
 __all__ = ["app"]
 
@@ -243,44 +243,96 @@ async def _probe(provider_ref: ModelRequest) -> ModelResponse:
         await provider.aclose()
 
 
-@app.command(name="validate-model")
-def validate_model(
-    model_config: Annotated[Path, typer.Option("--model-config", exists=True)],
-) -> None:
-    """Construct a provider from a model config and report its capabilities. Only the ``mock``
-    provider is live-probed here (it's free and local) — real providers report configuration
-    status only; live verification happens through ``eval --offline``/future ``--live`` support."""
-    config_file = load_model_config(model_config)
-    spec = config_file.to_model_spec()
-    try:
-        get_provider_class(spec.provider)
-    except ConfigError as exc:
-        _fail(str(exc))
-        return
-
-    from financebench.models.base import create_provider
-
+async def _validate_model(spec: ModelSpec) -> tuple[bool, list[str]]:
+    """Health-check a provider and send it one real request. Returns (ok, lines)."""
     provider = create_provider(spec.provider)
-    caps = provider.capabilities(spec.model)
-    console.print(f"[bold]{spec.ref}[/bold]")
-    console.print(f"  capabilities: {caps}")
+    lines: list[str] = [f"  capabilities: {provider.capabilities(spec.model)}"]
+    ok = True
+    try:
+        health = getattr(provider, "health", None)
+        if health is not None:
+            reachable, detail = await health()
+            lines.append(
+                f"  endpoint: {'[green]ok[/green]' if reachable else '[red]FAILED[/red]'} — {detail}"
+            )
+            ok = ok and reachable
+            if not reachable:
+                return False, lines
 
-    if spec.provider == "mock":
+        check_model = getattr(provider, "check_model", None)
+        if check_model is not None:
+            present, detail = await check_model(spec.model)
+            lines.append(
+                f"  model: {'[green]ok[/green]' if present else '[red]FAILED[/red]'} — {detail}"
+            )
+            ok = ok and present
+            if not present:
+                return False, lines
+
+        # A real request. This is what turns "configured" into "verified" — nothing else here
+        # proves the thing can actually answer.
         request = ModelRequest(
             model=spec,
-            messages=(ChatMessage(role=Role.USER, content="probe"),),
+            messages=(
+                ChatMessage(
+                    role=Role.USER,
+                    content='Reply with JSON only: {"answer": "ok", "numeric_value": 4}',
+                ),
+            ),
             prompt_version="doctor-probe",
             benchmark="doctor",
             benchmark_version="1",
             sample_id="doctor:probe:1",
+            max_tokens=64,
         )
-        response = asyncio.run(_probe(request))
-        console.print(f"  probe call: [green]ok[/green] (latency={response.latency_ms}ms)")
-    else:
+        response = await provider.generate(request)
+        latency = f"{response.latency_ms:.0f}ms" if response.latency_ms else "?"
+        tokens = response.token_usage.total_tokens if response.token_usage else None
+        lines.append(
+            f"  live call: [green]ok[/green] ({latency}, {tokens} tokens) "
+            f"-> {response.content.strip()[:80]!r}"
+        )
+    except ProviderError as exc:
+        lines.append(f"  live call: [red]FAILED[/red] — {exc}")
+        ok = False
+    finally:
+        await provider.aclose()
+    return ok, lines
+
+
+@app.command(name="validate-model")
+def validate_model(
+    model_config: Annotated[Path, typer.Option("--model-config", exists=True)],
+) -> None:
+    """Health-check a provider and send it one real request.
+
+    For a local provider this is a genuine end-to-end check: is the server up, is the model pulled,
+    and can it actually answer? For an API provider with no credentials configured it reports
+    ``unverified`` — which is not the same thing as failed.
+    """
+    config_file = load_model_config(model_config)
+    spec = config_file.to_model_spec()
+    try:
+        provider_cls = get_provider_class(spec.provider)
+    except ConfigError as exc:
+        _fail(str(exc))
+        return
+
+    console.print(f"[bold]{spec.ref}[/bold]")
+
+    key_env = getattr(provider_cls, "API_KEY_ENV", None)
+    if getattr(provider_cls, "REQUIRES_KEY", False) and not os.environ.get(key_env or ""):
         console.print(
-            "  [yellow]not live-tested here[/yellow] — this provider is registered but live verification is pending."
+            f"  [yellow]unverified[/yellow] — {spec.provider} needs {key_env}, which is not set. "
+            "Not a failure: the provider is implemented, it simply has no credentials here."
         )
-    asyncio.run(provider.aclose())
+        return
+
+    ok, lines = asyncio.run(_validate_model(spec))
+    for line in lines:
+        console.print(line)
+    if not ok:
+        raise typer.Exit(code=1)
 
 
 # --------------------------------------------------------------------------- eval / resume
@@ -382,8 +434,27 @@ def eval_(
             "pipeline, never a model. Such runs are barred from the leaderboard.",
         ),
     ] = False,
+    prompt_profile: Annotated[
+        str,
+        typer.Option(
+            "--prompt-profile",
+            help="What to ask the model for. 'program_v1' is required for FinQA/ConvFinQA "
+            "official program accuracy.",
+        ),
+    ] = DEFAULT_PROMPT_PROFILE,
+    eval_mode: Annotated[
+        EvalMode,
+        typer.Option(
+            "--eval-mode", help="What is being measured: the model, a retriever, or an agent."
+        ),
+    ] = EvalMode.CONTEXT_GIVEN,
 ) -> None:
     """Evaluate a model against a single benchmark (--benchmark) or a group (--group)."""
+    if prompt_profile not in available_prompt_profiles():
+        _fail(
+            f"unknown --prompt-profile {prompt_profile!r}; available: {available_prompt_profiles()}"
+        )
+        return
     try:
         label, benchmark_splits = _resolve_benchmark_splits(benchmark, group, split)
     except ConfigError as exc:
@@ -400,12 +471,6 @@ def eval_(
         cache=cache,
     )
 
-    run_id = make_run_id(label, config_file.to_model_spec().ref, seed)
-    out_dir = output_dir / run_id
-    if out_dir.exists() and not resume:
-        _fail(f"Run directory already exists: {out_dir}\nPass --resume to continue/refresh it.")
-        return
-
     request = EvalRequest(
         label=label,
         benchmark_splits=benchmark_splits,
@@ -416,7 +481,16 @@ def eval_(
         max_cost_usd=max_cost_usd,
         offline=offline,
         allow_mock=allow_mock,
+        prompt_profile=prompt_profile,
+        eval_mode=eval_mode,
     )
+
+    # One definition of the run id, shared with run_eval — see orchestration.run_id_for().
+    out_dir = output_dir / run_id_for(request)
+    if out_dir.exists() and not resume:
+        _fail(f"Run directory already exists: {out_dir}\nPass --resume to continue/refresh it.")
+        return
+
     try:
         outcome = asyncio.run(run_eval(request, out_dir=out_dir))
     except ConfigError as exc:

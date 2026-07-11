@@ -1,0 +1,31 @@
+{
+  "cache_key": "451078f587eb7969f8208620706224d41981c4617aced00dea66d6a5096b5289",
+  "written_at": "2026-07-11T06:37:18.142544Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "content": "{\n  \"answer\": \"41%\",\n  \"numeric_value\": 41,\n  \"unit\": \"%\",\n  \"period\": null,\n  \"citations\": [],\n  \"insufficient_information\": false,\n  \"confidence\": 0.95,\n  \"brief_explanation\": \"The leased facilities total is 8.1 million square feet out of a total of 56.0 million square feet for all facilities. To find the percentage, we calculate (8.1 / 56.0) * 100 = 41%\"\n}",
+    "financial_answer": {
+      "answer": "41%",
+      "numeric_value": 41.0,
+      "unit": "%",
+      "citations": [],
+      "insufficient_information": false,
+      "confidence": 0.95,
+      "brief_explanation": "The leased facilities total is 8.1 million square feet out of a total of 56.0 million square feet for all facilities. To find the percentage, we calculate (8.1 / 56.0) * 100 = 41%"
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 982,
+      "completion_tokens": 120,
+      "total_tokens": 1102
+    },
+    "latency_ms": 16578.49783699976,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-581",
+      "finish_reason": "stop"
+    }
+  }
+}

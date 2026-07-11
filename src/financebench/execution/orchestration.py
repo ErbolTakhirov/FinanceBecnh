@@ -21,7 +21,7 @@ from financebench.execution.cache import ResponseCache
 from financebench.execution.engine import RunEngine, RunResult
 from financebench.models.base import ModelProvider, get_provider_class
 from financebench.models.mock import MockProvider, build_mock_oracle
-from financebench.schemas.common import RunType
+from financebench.schemas.common import DEFAULT_PROMPT_PROFILE, EvalMode, RunType
 from financebench.schemas.manifest import DatasetManifest
 from financebench.schemas.metric import MetricResult
 from financebench.schemas.model_io import ModelSpec
@@ -50,6 +50,8 @@ class EvalRequest:
     offline: bool = False
     allow_mock: bool = False
     """Must be explicitly set to run the ``mock`` provider. See :func:`_build_provider`."""
+    prompt_profile: str = DEFAULT_PROMPT_PROFILE
+    eval_mode: EvalMode = EvalMode.CONTEXT_GIVEN
 
 
 @dataclass(frozen=True)
@@ -97,6 +99,23 @@ def _build_provider(
     return MockProvider(oracle=build_mock_oracle(samples))
 
 
+def run_id_for(request: EvalRequest) -> str:
+    """The run id for ``request`` — **the single definition**, used by the CLI to pick the output
+    directory and by :func:`run_eval` to stamp the artifacts.
+
+    The prompt profile and eval mode are part of a run's identity: asking a model for a program
+    and asking it for a number are different runs and must not share a directory. Two call sites
+    computing this separately is exactly how they drift — which is what happened here, and how a
+    ``program_v1`` run silently landed in a ``structured_financial_v1`` run's directory.
+    """
+    model = request.model_config_file.to_model_spec()
+    return make_run_id(
+        f"{request.label}-{request.prompt_profile}-{request.eval_mode.value}",
+        model.ref,
+        request.seed,
+    )
+
+
 async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
     model = request.model_config_file.to_model_spec()
     run_type = RunType.MOCK_TEST if model.provider == "mock" else RunType.REAL
@@ -116,9 +135,13 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         )
 
     config = request.model_config_file.to_run_config(
-        seed=request.seed, limit=request.max_samples, max_cost_usd=request.max_cost_usd
+        seed=request.seed,
+        limit=request.max_samples,
+        max_cost_usd=request.max_cost_usd,
+        prompt_profile=request.prompt_profile,
+        eval_mode=request.eval_mode,
     )
-    run_id = make_run_id(request.label, model.ref, request.seed)
+    run_id = run_id_for(request)
     cache = ResponseCache(request.cache_dir, mode=config.cache_mode)
 
     # The oracle is built from the *truncated* sample list the engine will actually run, so a

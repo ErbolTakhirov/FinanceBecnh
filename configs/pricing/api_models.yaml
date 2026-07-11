@@ -1,0 +1,13 @@
+# Published list prices, USD per 1M tokens.
+#
+# A model absent from this file gets a cost of `null`, not 0.0 — zero is a claim, and it is only
+# true for local inference. See src/financebench/models/pricing.py.
+as_of: "2026-07-11"
+
+models:
+  openai/gpt-4o:              { input_usd_per_1m: 2.50,  output_usd_per_1m: 10.00 }
+  openai/gpt-4o-mini:         { input_usd_per_1m: 0.15,  output_usd_per_1m: 0.60 }
+  anthropic/claude-sonnet-4-5: { input_usd_per_1m: 3.00, output_usd_per_1m: 15.00 }
+  anthropic/claude-haiku-4-5:  { input_usd_per_1m: 1.00, output_usd_per_1m: 5.00 }
+  gemini/gemini-2.5-flash:    { input_usd_per_1m: 0.30,  output_usd_per_1m: 2.50 }
+  gemini/gemini-2.5-pro:      { input_usd_per_1m: 1.25,  output_usd_per_1m: 10.00 }

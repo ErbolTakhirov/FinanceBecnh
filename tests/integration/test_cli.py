@@ -67,10 +67,12 @@ def test_list_model_providers_shows_mock() -> None:
     assert "mock" in result.output
 
 
-def test_validate_model_mock_probes_successfully() -> None:
+def test_validate_model_sends_a_real_request_to_the_provider() -> None:
+    """`validate-model` is only worth anything if it actually calls the thing. For the mock that
+    is trivially local; for a real provider it is what turns "configured" into "verified"."""
     result = runner.invoke(app, ["validate-model", "--model-config", "configs/models/mock.yaml"])
     assert result.exit_code == 0
-    assert "probe call: ok" in result.output
+    assert "live call: ok" in result.output
 
 
 def test_prepare_smoke_needs_no_download() -> None:

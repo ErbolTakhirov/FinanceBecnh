@@ -1,0 +1,16 @@
+# llama.cpp's server also speaks the OpenAI dialect:
+#
+#   llama-server -m model.gguf --port 8080 --host 127.0.0.1
+#   export FINANCEBENCH_OPENAI_COMPATIBLE_BASE_URL=http://localhost:8080/v1
+provider: openai_compatible
+model: local-gguf          # llama-server ignores this; it serves the model it was started with
+
+generation:
+  temperature: 0
+  max_output_tokens: 512
+  timeout_seconds: 300
+
+runtime:
+  concurrency: 1          # llama-server defaults to a single slot
+  retries: 3
+  cache: true

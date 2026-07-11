@@ -1,0 +1,31 @@
+{
+  "cache_key": "aef8c950652b2a385c881e754a0d3268d98a4dcb115825fbcf7f2dbda1c26fbb",
+  "written_at": "2026-07-11T06:37:31.372244Z",
+  "financebench_version": "0.1.0-alpha",
+  "response": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "content": "{\n  \"answer\": \"+94\",\n  \"numeric_value\": 94,\n  \"unit\": \"\",\n  \"period\": null,\n  \"citations\": [],\n  \"insufficient_information\": false,\n  \"confidence\": 1.0,\n  \"brief_explanation\": \"The net change in net revenue for Entergy Corporation from 2014 to 2015 is calculated by subtracting the 2014 net revenue ($5735) from the 2015 net revenue ($5829), resulting in a positive difference of $94.\"\n}",
+    "financial_answer": {
+      "answer": "+94",
+      "numeric_value": 94.0,
+      "unit": "",
+      "citations": [],
+      "insufficient_information": false,
+      "confidence": 1.0,
+      "brief_explanation": "The net change in net revenue for Entergy Corporation from 2014 to 2015 is calculated by subtracting the 2014 net revenue ($5735) from the 2015 net revenue ($5829), resulting in a positive difference of $94."
+    },
+    "parsed": true,
+    "token_usage": {
+      "prompt_tokens": 1119,
+      "completion_tokens": 127,
+      "total_tokens": 1246
+    },
+    "latency_ms": 29836.415762999877,
+    "estimated_cost_usd": 0.0,
+    "raw": {
+      "id": "chatcmpl-147",
+      "finish_reason": "stop"
+    }
+  }
+}

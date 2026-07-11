@@ -1,0 +1,19 @@
+# A REAL local model, served by Ollama. No API key, no cloud, no cost.
+#
+#   ollama serve                 # if it isn't already running
+#   ollama pull qwen2.5:7b
+#   financebench validate-model --model-config configs/models/ollama.example.yaml
+#
+# `model` is the Ollama tag exactly as `ollama list` shows it.
+provider: ollama
+model: qwen2.5:7b
+
+generation:
+  temperature: 0          # determinism: the same prompt must give the same answer
+  max_output_tokens: 512
+  timeout_seconds: 300    # a 7B model spilling to CPU is slow; do not mistake that for a hang
+
+runtime:
+  concurrency: 2          # local inference is compute-bound; more parallelism is slower, not faster
+  retries: 3
+  cache: true

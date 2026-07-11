@@ -1,0 +1,17 @@
+# Any server speaking the OpenAI /v1/chat/completions dialect: vLLM, llama.cpp, LM Studio,
+# Together, Fireworks, a self-hosted gateway...
+#
+#   export FINANCEBENCH_OPENAI_COMPATIBLE_BASE_URL=http://localhost:8000/v1
+#   export FINANCEBENCH_OPENAI_COMPATIBLE_API_KEY=...   # only if your server wants one
+provider: openai_compatible
+model: Qwen/Qwen2.5-7B-Instruct
+
+generation:
+  temperature: 0
+  max_output_tokens: 512
+  timeout_seconds: 300
+
+runtime:
+  concurrency: 4
+  retries: 3
+  cache: true
