@@ -1,0 +1,21 @@
+{
+  "run_a": "tool_paired_v1-structured_financial_v1-context_given-ollama-qwen2.5-3b-c3de9553",
+  "run_b": "tool_paired_v1-structured_financial_v1-context_given-ollama-qwen2.5-7b-6a22c0f5",
+  "model_a": "ollama/qwen2.5:3b",
+  "model_b": "ollama/qwen2.5:7b",
+  "evaluator_fingerprint": "80ca8a678b1c4fa1",
+  "metric": "finqa_answer_accuracy",
+  "n_paired": 75,
+  "mean_a": 0.14666666666666667,
+  "mean_b": 0.26666666666666666,
+  "mean_difference": -0.12,
+  "ci_low": -0.22666666666666666,
+  "ci_high": -0.013333333333333334,
+  "significant": true,
+  "underpowered": false,
+  "a_right_b_wrong": 4,
+  "b_right_a_wrong": 13,
+  "both_right": 7,
+  "both_wrong": 51,
+  "verdict": "tool_paired_v1-structured_financial_v1-context_given-ollama-qwen2.5-7b-6a22c0f5 beats tool_paired_v1-structured_financial_v1-context_given-ollama-qwen2.5-3b-c3de9553 (difference 0.120, 95% CI [-0.227, -0.013] \u2014 excludes zero)."
+}

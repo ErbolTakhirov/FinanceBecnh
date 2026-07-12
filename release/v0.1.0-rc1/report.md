@@ -51,12 +51,40 @@ choose between emitting a tool call and emitting an answer — not by the tools.
 route its own reasoning through a protocol gets worse at the underlying arithmetic, while ignoring the
 protocol. It also spent **27% more tokens** doing it (207,473 vs 163,028).
 
-**Does tool access improve correctness?** No — it significantly reduces it, for this model.
+### And the 7B, on the same 150 questions
+
+| | 3B direct | 3B + tools | **7B direct** |
+|---|---|---|---|
+| FinQA answer accuracy | 0.147 | 0.027 | **0.267** |
+| TAT-QA exact match | 0.173 | 0.067 | **0.267** |
+| exact match (all 150) | 0.140 | 0.060 | **0.167** |
+
+Paired bootstrap, identical sample ids, identical evaluator:
+
+| comparison | metric | difference | 95% CI | |
+|---|---|---|---|---|
+| 7B direct **vs** 3B direct | FinQA | 0.120 | `[-0.227, -0.013]` | **7B wins** |
+| **7B direct vs 3B + tools** | FinQA | **0.240** | `[-0.347, -0.133]` | **7B wins, 10×** |
+| **7B direct vs 3B + tools** | TAT-QA | **0.200** | `[-0.307, -0.093]` | **7B wins** |
+
+### The six questions, answered
+
+**Does tool access improve correctness?** **No — it significantly reduces it** for this model.
+
 **Does it reduce catastrophic numeric errors?** No.
-**Does the model actually invoke tools?** Almost never: 2 of 150.
-**Does it use correct tool output?** The single successful execution *was* used (n=1 — not a claim).
-**Does orchestration introduce new failures?** Yes. That is the entire effect.
-**Can a smaller model with tools beat a larger model without?** Not here; see below.
+
+**Does the model actually invoke tools?** Almost never — **2 of 150 questions**.
+
+**Does it use correct tool output?** The one successful execution *was* used. `n=1`; that is not a
+claim about anything, and it is printed with its `n` so that it cannot be read as one.
+
+**Does orchestration introduce new failures?** **Yes — that is the entire effect.** The model barely
+touched the tools and still lost five-sixths of its FinQA answers.
+
+**Can a smaller model with tools outperform a larger model without tools?**
+**Emphatically no.** 3B+tools scores **0.027** against 7B-direct's **0.267** — *ten times worse*, with
+the interval excluding zero. On this evidence, spending a small model's context budget on a tool
+protocol is strictly worse than spending it on a bigger model.
 
 ---
 
