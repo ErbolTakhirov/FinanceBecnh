@@ -76,7 +76,12 @@ METRIC_VERSIONS: dict[str, str] = {
     # SECQUE's gold is an expert's prose; there is no exact-match metric and there cannot be one.
     "secque_numeric_agreement": "1",
     "secque_unsupported_numeric_claim": "1",  # uses grounding v3 (leading-digit match)
-    "secque_comparison_direction": "1",
+    # v2: the gold establishes a direction by LISTING TWO DATED FIGURES as often as by writing
+    # "decreased". v1 only looked for the word, so it returned not-applicable on the clearest
+    # inversion in the set (Nike EBIT: gold shows a fall, the model said "increased" and invented
+    # both figures) and then reported 1.000 over the twelve easy cases where it did fire. A metric
+    # that only grades the questions it finds easy is not lenient, it is broken.
+    "secque_comparison_direction": "2",
     "secque_filing_identification": "1",
     # Tool use. `tool_result_utilization` is the one that matters: a model that calls the calculator,
     # receives 40.55, and writes "approximately 38" has made a TRUST error, not an arithmetic one —

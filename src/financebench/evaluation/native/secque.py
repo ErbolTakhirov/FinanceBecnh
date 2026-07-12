@@ -232,6 +232,71 @@ def _direction(text: str) -> str | None:
     return "up" if up else "down"
 
 
+#: ``EBIT 2018: $4,379 million`` — a metric, a year, and a figure. The expert's answers state the
+#: direction of travel this way constantly, by simply listing both years, without ever writing the
+#: word "decreased".
+_DATED_FIGURE = re.compile(
+    r"(?:19|20)(\d{2})\s*[:=]?\s*\$?\s*([\d,]+(?:\.\d+)?)"
+    r"|\$?\s*([\d,]+(?:\.\d+)?)\s*(?:million|billion|bn|m)?\s*(?:in|for|during)\s+((?:19|20)\d{2})",
+    re.IGNORECASE,
+)
+
+
+def _direction_from_figures(text: str) -> str | None:
+    """Derive the direction from two DATED FIGURES, when no direction word is present.
+
+    This exists because of a case the release audit caught, and it is the exact failure the metric
+    was written to prevent:
+
+        gold  : "EBIT 2018: $4,379 million / EBIT 2017: $4,945 million"   (EBIT FELL)
+        model : "EBIT increased from $5,192 million in 2017 to $5,525 million in 2018"
+
+    Both of the model's figures are invented, and the *conclusion is inverted* — and
+    ``secque_comparison_direction`` returned **not-applicable**, because the expert's answer states
+    the direction by listing two years rather than by writing "decreased". So the metric that exists
+    to catch an inverted direction sat out the clearest inversion in the set, and then reported
+    **1.000** over the twelve easy cases where it did fire.
+
+    A metric that only grades the questions it finds easy is not a lenient metric. It is a broken one,
+    and its score is an artifact of its own coverage.
+
+    Conservative by construction: it fires only when the text names exactly two distinct years, each
+    with exactly one figure, and those figures differ. Anything more ambiguous returns ``None``.
+    """
+    by_year: dict[int, set[float]] = {}
+    for match in _DATED_FIGURE.finditer(text):
+        year_suffix, value_a, value_b, year_full = match.groups()
+        if year_suffix is not None and value_a is not None:
+            year = int(match.group(0)[:4]) if match.group(0)[:2] in ("19", "20") else None
+            raw = value_a
+        elif value_b is not None and year_full is not None:
+            year = int(year_full)
+            raw = value_b
+        else:
+            continue
+        if year is None or not (1990 <= year <= 2035):
+            continue
+        try:
+            by_year.setdefault(year, set()).add(float(raw.replace(",", "")))
+        except ValueError:
+            continue
+
+    # Exactly two years, each with exactly one unambiguous figure.
+    usable = {year: next(iter(values)) for year, values in by_year.items() if len(values) == 1}
+    if len(usable) != 2:
+        return None
+    (earlier, earlier_value), (later, later_value) = sorted(usable.items())
+    if earlier == later or earlier_value == later_value:
+        return None
+    return "up" if later_value > earlier_value else "down"
+
+
+def _gold_direction(text: str) -> str | None:
+    """The expert's direction of travel: stated in words, or implied by two dated figures."""
+    stated = _direction(text)
+    return stated if stated is not None else _direction_from_figures(text)
+
+
 @register_metric("secque_comparison_direction")
 class SecqueComparisonDirection(Metric):
     """Did the model get the direction of travel right?
@@ -240,17 +305,20 @@ class SecqueComparisonDirection(Metric):
     deteriorated" are the same sentence with opposite consequences, and a model can quote every
     correct figure and still invert the conclusion drawn from them.
 
-    Only applicable where the expert's answer states a direction — otherwise there is nothing to
-    compare against, and it says so rather than guessing.
+    Applicable where the expert's answer establishes a direction — **in words, or by listing two
+    dated figures**. The second half was missing, and it mattered: the expert routinely writes
+    "EBIT 2018: $4,379 million / EBIT 2017: $4,945 million" and never the word "decreased", so the
+    metric declared itself not-applicable on exactly the case it exists for, and reported 1.000 over
+    the handful of questions where the expert happened to use a direction word.
     """
 
     name = "secque_comparison_direction"
 
     def score(self, sample: CanonicalSample, prediction: Prediction) -> MetricResult:
-        expected = _direction(sample.gold.answer)
+        expected = _gold_direction(sample.gold.answer)
         if expected is None:
             return _not_applicable(
-                sample, self.name, "the expert's answer states no single direction of travel"
+                sample, self.name, "the expert's answer establishes no single direction of travel"
             )
 
         text = _answer_text(prediction)

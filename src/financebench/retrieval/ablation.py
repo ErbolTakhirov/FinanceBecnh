@@ -22,6 +22,8 @@ the corpus is the problem rather than the ranker.
 
 from __future__ import annotations
 
+import math
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -35,7 +37,10 @@ from financebench.schemas.sample import CanonicalSample
 __all__ = ["AblationCell", "run_ablation"]
 
 RETRIEVERS = ("bm25", "dense", "hybrid")
-TOP_KS = (5, 10, 20)
+#: 1 and 3 are free: `_score_cell` grades a shallower k by TRUNCATING the deepest retrieval, so the
+#: whole sweep still costs one pass. recall@1 is the number that matters most for a small model with
+#: a short context — it is "did the very first page we pasted in contain the answer".
+TOP_KS = (1, 3, 5, 10, 20)
 
 
 @dataclass(frozen=True)
@@ -55,6 +60,19 @@ class AblationCell:
     """Where the right page landed, among the questions where it was found at all. A retriever that
     finds the page but ranks it 18th is a different problem from one that never finds it: the first
     needs a re-ranker, the second needs a different index."""
+    mrr: float
+    """Mean reciprocal rank over ALL questions — a miss contributes 0.
+
+    Deliberately different from ``mean_gold_rank``, which is conditioned on the page being found and
+    therefore gets *better* the more questions a retriever fails: a retriever that finds one page,
+    at rank 1, has a perfect mean_gold_rank and is useless. MRR cannot be gamed that way."""
+    ndcg: float
+    """nDCG@k with binary gains. With one gold page it reduces to 1/log2(rank+1), but FinanceBench
+    questions can cite several pages, and nDCG is the standard way to say "it found two of the three,
+    and it found them early"."""
+    mean_query_ms: float
+    """Wall-clock per query. Dense is a brute-force cosine over 11,927 vectors in pure Python, and
+    that is not free — a retriever that is 3 points better and 40x slower is a different trade."""
 
     def to_json(self) -> dict[str, object]:
         return {
@@ -70,7 +88,27 @@ class AblationCell:
             "mean_gold_rank": None
             if self.mean_gold_rank is None
             else round(self.mean_gold_rank, 2),
+            "mrr": round(self.mrr, 4),
+            "ndcg": round(self.ndcg, 4),
+            "mean_query_ms": round(self.mean_query_ms, 1),
         }
+
+
+def _ndcg(sample: CanonicalSample, result: RetrievalResult) -> float:
+    """nDCG@k with binary relevance: a retrieved page is worth 1 if it is a gold page, else 0."""
+    gold = {f"{e.document_id}#p{e.page}" for e in sample.gold.evidence if e.page is not None}
+    if not gold:
+        return 0.0
+    dcg = sum(
+        1.0 / math.log2(rank + 1)
+        for rank, retrieved in enumerate(result.pages, start=1)
+        if retrieved.page.chunk_id in gold
+    )
+    # The ideal: every gold page packed into the top slots.
+    ideal = sum(
+        1.0 / math.log2(rank + 1) for rank in range(1, min(len(gold), len(result.pages)) + 1)
+    )
+    return dcg / ideal if ideal else 0.0
 
 
 def _score_cell(
@@ -80,14 +118,17 @@ def _score_cell(
     retriever: str,
     top_k: int,
     document_scoped: bool,
+    mean_query_ms: float = 0.0,
 ) -> AblationCell:
     """Grade one k by **truncating** a deeper retrieval, rather than re-running it.
 
     The top 5 of a ranked list of 20 *is* the top 5 — a retriever asked for 5 would return exactly
     those. So one retrieval at the deepest k answers every shallower k for free, and the ablation
-    costs one pass instead of three.
+    costs one pass instead of five.
     """
     scores = []
+    ndcgs: list[float] = []
+    reciprocal_ranks: list[float] = []
     for sample in samples:
         result = results.get(sample.sample_id)
         if result is None:
@@ -95,7 +136,13 @@ def _score_cell(
         truncated = RetrievalResult(
             pages=result.pages[:top_k], retriever=result.retriever, top_k=top_k
         )
-        scores.append(score_retrieval(sample, truncated))
+        score = score_retrieval(sample, truncated)
+        scores.append(score)
+        ndcgs.append(_ndcg(sample, truncated))
+        # A miss contributes ZERO, over every question — not "excluded from the average".
+        reciprocal_ranks.append(
+            1.0 / score.gold_page_rank if score.gold_page_rank is not None else 0.0
+        )
 
     n = len(scores) or 1
     ranks = [s.gold_page_rank for s in scores if s.gold_page_rank is not None]
@@ -110,6 +157,9 @@ def _score_cell(
         evidence_recall=sum(s.evidence_recall for s in scores) / n,
         evidence_f1=sum(s.evidence_f1 for s in scores) / n,
         mean_gold_rank=(sum(ranks) / len(ranks)) if ranks else None,
+        mrr=sum(reciprocal_ranks) / n,
+        ndcg=sum(ndcgs) / n,
+        mean_query_ms=mean_query_ms,
     )
 
 
@@ -131,6 +181,7 @@ def run_ablation(
     deepest = max(top_ks)
 
     cells: list[AblationCell] = []
+    build_ms: dict[str, float] = {}
     for retriever_name in retrievers:
         factory = make_retriever_factory(
             corpus,
@@ -138,11 +189,16 @@ def run_ablation(
             pdf_dir=pdf_dir,
             embed_cache_dir=embed_cache_dir,
         )
+        # Index-build time over the FULL corpus. Reported, because a retriever is not free before it
+        # answers anything: BM25 tokenizes 12,013 pages, and the dense arm must have embedded them.
+        started = time.perf_counter()
         full = factory(corpus)
+        build_ms[retriever_name] = (time.perf_counter() - started) * 1000
 
         for document_scoped in scopings:
             scoped_cache: dict[str, object] = {}
             results: dict[str, RetrievalResult] = {}
+            query_ms: list[float] = []
 
             for sample in samples:
                 retriever = full
@@ -153,8 +209,11 @@ def run_ablation(
                             scoped_cache[document] = factory(corpus.scoped_to({document}))
                         retriever = scoped_cache[document]  # type: ignore[assignment]
                 # The retriever is handed the question and nothing else — no sample, so no gold.
+                query_started = time.perf_counter()
                 results[sample.sample_id] = retriever.retrieve(sample.question, top_k=deepest)
+                query_ms.append((time.perf_counter() - query_started) * 1000)
 
+            mean_query_ms = sum(query_ms) / len(query_ms) if query_ms else 0.0
             for top_k in top_ks:
                 cells.append(
                     _score_cell(
@@ -163,9 +222,16 @@ def run_ablation(
                         retriever=retriever_name,
                         top_k=top_k,
                         document_scoped=document_scoped,
+                        mean_query_ms=mean_query_ms,
                     )
                 )
             if callable(on_progress):
                 on_progress(retriever_name, document_scoped)
 
+    run_ablation.last_index_build_ms = build_ms  # type: ignore[attr-defined]
+    run_ablation.last_corpus = {  # type: ignore[attr-defined]
+        "pages": len(corpus),
+        "documents": len(corpus.documents),
+        "fingerprint": corpus.fingerprint,
+    }
     return cells

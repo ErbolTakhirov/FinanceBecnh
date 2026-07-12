@@ -179,3 +179,39 @@ def test_a_sandbox_that_refused_everything_passes() -> None:
 
     assert gate.passed is True
     assert report.any_critical_gate_failed is False
+
+
+# --------------------------------------------------------------------------------------------
+# 4. A metric that only grades the questions it finds easy is broken, not lenient.
+# --------------------------------------------------------------------------------------------
+
+
+def test_comparison_direction_fires_when_the_gold_lists_two_dated_figures() -> None:
+    """The live 7B run, verbatim:
+
+        gold  : "EBIT 2018: $4,379 million / EBIT 2017: $4,945 million"   -> EBIT FELL
+        model : "EBIT increased from $5,192 million in 2017 to $5,525 million in 2018"
+
+    Both figures invented, and the conclusion INVERTED. ``secque_comparison_direction`` returned
+    NOT-APPLICABLE, because the expert stated the direction by listing two years instead of writing
+    the word "decreased" — so the metric sat out the clearest inversion in the set, and then reported
+    **1.000** over the twelve easy cases where it did fire.
+    """
+    from financebench.evaluation.native.secque import _direction, _gold_direction
+
+    gold = "EBIT 2018: $4,379 million\nEBIT 2017: $4,945 million\nFormula: percentage change"
+    model = "NIKE's EBIT increased from $5,192 million in 2017 to $5,525 million in 2018"
+
+    assert _gold_direction(gold) == "down", "the gold's own figures establish the direction"
+    assert _direction(model) == "up"
+    assert _gold_direction(gold) != _direction(model), "and the metric must now catch the inversion"
+
+
+def test_comparison_direction_refuses_to_invent_a_direction_from_ambiguity() -> None:
+    """The fallback fires only on two years, one figure each, that actually differ. Guessing a
+    direction from anything less would invent the expert's opinion for them."""
+    from financebench.evaluation.native.secque import _direction_from_figures
+
+    assert _direction_from_figures("Revenue was $5,000 million.") is None
+    assert _direction_from_figures("Revenue 2018: $1 / 2019: $2 / 2020: $3") is None
+    assert _direction_from_figures("Margins were 12% in 2017 and 12% in 2018.") is None
