@@ -1,4 +1,4 @@
-"""The FinanceBecnh CLI (Typer). Every command is documented in ``docs/`` as it lands; this
+"""The FinanceBench CLI (Typer). Every command is documented in ``docs/`` as it lands; this
 module wires argument parsing and output formatting to the library code in ``execution/``,
 ``datasets/``, ``models/``, and ``storage/`` — it contains no scoring or orchestration logic of
 its own beyond formatting.
@@ -27,6 +27,8 @@ import financebench.models  # noqa: F401  (import registers every built-in model
 from financebench.config.benchmark_group import load_benchmark_group
 from financebench.config.model_config import ModelConfigFile, load_model_config
 from financebench.datasets.base import available_datasets, create_dataset
+from financebench.evaluation.benchmark_metrics import preferred_metric_name
+from financebench.evaluation.stats import paired_bootstrap
 from financebench.execution.cache import ResponseCache
 from financebench.execution.orchestration import EvalRequest, run_eval, run_id_for
 from financebench.models.base import create_provider, describe_providers, get_provider_class
@@ -76,7 +78,7 @@ def _fail(message: str) -> None:
 def doctor() -> None:
     """Check the local environment: Python version, writable dirs, providers, datasets, and
     optional dependencies. Exits non-zero if anything required is missing."""
-    console.print("[bold]FinanceBecnh doctor[/bold]\n")
+    console.print("[bold]FinanceBench doctor[/bold]\n")
     all_ok = True
 
     py_ok = sys.version_info >= (3, 11)
@@ -617,6 +619,13 @@ def resume(
         splits_by_dataset.setdefault(str(record["benchmark"]), str(record["split"]))
     benchmark_splits = tuple(sorted(splits_by_dataset.items()))
 
+    # A resume must reconstruct the run that WAS, not a run with the same name. Every field below is
+    # part of the run's identity, and every one of them used to be dropped: resume rebuilt the
+    # request with library defaults, so resuming a `retrieval_required` / hybrid / document-scoped /
+    # `program_v1` run silently re-ran it as `context_given` / bm25 / k=5 / open-corpus /
+    # `structured_financial_v1` — and then overwrote the original run's artifacts, in place, under
+    # the original run's id. The artifacts would still have said `retrieval_required`. Nothing would
+    # have looked wrong.
     request = EvalRequest(
         label=str(environment["benchmark_or_group"]),
         benchmark_splits=benchmark_splits,
@@ -627,7 +636,30 @@ def resume(
         max_cost_usd=run_config.get("max_cost_usd"),
         offline=False,
         allow_mock=allow_mock,
+        prompt_profile=str(run_config.get("prompt_profile", DEFAULT_PROMPT_PROFILE)),
+        eval_mode=EvalMode(run_config.get("eval_mode", EvalMode.CONTEXT_GIVEN.value)),
+        conversation_protocol=ConversationProtocol(
+            run_config.get("conversation_protocol", ConversationProtocol.GOLD_HISTORY.value)
+        ),
+        retriever=str(run_config.get("retriever", "bm25")),
+        top_k=int(run_config.get("top_k", 5)),
+        document_scoped=bool(run_config.get("document_scoped", False)),
     )
+
+    # The rebuilt request must land on the run id it came from. If it does not, some part of the
+    # run's identity was not restored, and continuing would write one experiment's results into
+    # another's directory. Refuse loudly rather than corrupt the artifact.
+    rebuilt_id = run_id_for(request)
+    if rebuilt_id != run_id:
+        _fail(
+            f"Refusing to resume: the request rebuilt from {run_id}/run_config.json resolves to a "
+            f"DIFFERENT run id ({rebuilt_id}).\nSome part of the run's identity (prompt profile, "
+            "eval mode, conversation protocol, retriever, top_k, document scoping) could not be "
+            "restored — most likely the run predates its being recorded. Re-run it explicitly with "
+            "`financebench eval` rather than resuming it into the wrong directory."
+        )
+        return
+
     try:
         outcome = asyncio.run(run_eval(request, out_dir=out_dir))
     except ConfigError as exc:
@@ -644,51 +676,169 @@ def resume(
 # --------------------------------------------------------------------------- compare / report
 
 
+def _per_sample_scores(run_path: Path, metric_name: str) -> dict[str, float]:
+    """``{sample_id: 0.0|1.0}`` for one metric, from ``metric_details.jsonl``.
+
+    Not-applicable results are **omitted**, not zeroed — so they drop out of the pairing instead of
+    being counted as the model getting something wrong.
+    """
+    scores: dict[str, float] = {}
+    path = run_path / "metric_details.jsonl"
+    if not path.is_file():
+        return scores
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        if record.get("metric_name") != metric_name:
+            continue
+        value = record.get("value")
+        if isinstance(value, bool):
+            scores[record["sample_id"]] = 1.0 if value else 0.0
+        elif isinstance(value, int | float):
+            scores[record["sample_id"]] = float(value)
+    return scores
+
+
 @app.command()
 def compare(
-    run_id: Annotated[list[str], typer.Option("--run-id", help="Repeat to compare multiple runs.")],
+    run_id: Annotated[list[str], typer.Option("--run-id", help="Exactly two runs, paired.")],
+    metric: Annotated[
+        str | None,
+        typer.Option("--metric", help="Metric to pair on. Default: the runs' preferred metric."),
+    ] = None,
     runs_dir: Annotated[Path, typer.Option("--runs-dir")] = Path("runs"),
+    output: Annotated[
+        Path | None, typer.Option("--output", help="Write the paired comparison as JSON.")
+    ] = None,
 ) -> None:
-    """Compare metrics across two or more runs, warning if their coverage differs."""
-    if len(run_id) < 2:
-        _fail("--run-id must be passed at least twice.")
+    """Compare two runs on the samples they BOTH answered, with a paired bootstrap CI.
+
+    Pairing is the whole point. Two models scoring 45 % and 50 % on the same 40 questions look
+    indistinguishable as independent samples — but if the second got everything the first got plus
+    two more, that is a real difference an unpaired test would miss. In the other direction, an
+    unpaired test will happily manufacture a difference out of nothing.
+
+    Two runs may only be compared if they answered the **same questions** with the **same evaluator**.
+    Both are checked, and a mismatch is an error rather than a footnote: a difference between runs
+    with different evaluator fingerprints is a measurement of our own code changing, not of the model.
+    """
+    if len(run_id) != 2:
+        _fail("--run-id must be passed exactly twice — a paired comparison compares two runs.")
         return
 
-    loaded: list[tuple[str, dict[str, object], dict[str, object], dict[str, object]]] = []
-    for rid in run_id:
-        run_path = runs_dir / rid
-        if not run_path.is_dir():
-            _fail(f"No run found at {run_path}")
+    paths = [runs_dir / rid for rid in run_id]
+    for path in paths:
+        if not path.is_dir():
+            _fail(f"No run found at {path}")
             return
-        environment = json.loads((run_path / "environment.json").read_text(encoding="utf-8"))
-        metrics = json.loads((run_path / "metrics.json").read_text(encoding="utf-8"))
-        coverage = json.loads((run_path / "coverage.json").read_text(encoding="utf-8"))
-        loaded.append((rid, environment, metrics, coverage))
 
-    base_supported = loaded[0][3].get("supported_benchmarks")
-    mismatched = [
-        rid for rid, _, _, cov in loaded[1:] if cov.get("supported_benchmarks") != base_supported
-    ]
-    if mismatched:
+    envs = [json.loads((p / "environment.json").read_text(encoding="utf-8")) for p in paths]
+
+    # -- identity check 1: the same evaluator produced both sets of numbers.
+    digests = [e.get("evaluator_fingerprint", {}).get("digest") for e in envs]
+    if digests[0] != digests[1]:
+        _fail(
+            "These runs were scored by DIFFERENT evaluators and are not comparable:\n"
+            f"  {run_id[0]}: {digests[0]}\n  {run_id[1]}: {digests[1]}\n"
+            "Re-score the older run on the current commit (`financebench resume --run-id ...`, "
+            "which replays cached responses) before comparing. Fixing a parser once moved a FinQA "
+            "score from 5% to 15% on identical model output; a difference across fingerprints "
+            "measures our code, not the model."
+        )
+        return
+
+    # -- identity check 2: the same questions.
+    metric_name = metric
+    if metric_name is None:
+        benchmarks = [
+            (
+                json.loads((p / "coverage.json").read_text(encoding="utf-8")).get(
+                    "supported_benchmarks"
+                )
+                or [None]
+            )[0]
+            for p in paths
+        ]
+        if benchmarks[0] != benchmarks[1] or benchmarks[0] is None:
+            _fail("These runs cover different benchmarks; pass --metric to say what to pair on.")
+            return
+        profile = str(envs[0].get("prompt_profile", DEFAULT_PROMPT_PROFILE))
+        metric_name = preferred_metric_name(str(benchmarks[0]), profile)
+
+    scores = [_per_sample_scores(p, metric_name) for p in paths]
+    if not scores[0] or not scores[1]:
+        _fail(f"Metric {metric_name!r} has no per-sample results in one of these runs.")
+        return
+
+    only_a = sorted(set(scores[0]) - set(scores[1]))
+    only_b = sorted(set(scores[1]) - set(scores[0]))
+    if only_a or only_b:
         console.print(
-            "[yellow]Warning: these runs cover different benchmarks — scores below are not "
-            f"directly comparable: {', '.join([run_id[0], *mismatched])}[/yellow]\n"
+            f"[yellow]These runs do not cover identical samples — pairing on the "
+            f"{len(set(scores[0]) & set(scores[1]))} they share.\n"
+            f"  only in {run_id[0]}: {len(only_a)}   only in {run_id[1]}: {len(only_b)}[/yellow]\n"
         )
 
-    metric_names = sorted({name for _, _, metrics, _ in loaded for name in metrics})
-    table = Table("Run", "Model", *metric_names)
-    for rid, environment, metrics, _ in loaded:
-        row = [rid, str(environment.get("model_ref", "?"))]
-        for name in metric_names:
-            entry = metrics.get(name)
-            mean = entry.get("mean") if isinstance(entry, dict) else None
-            row.append(f"{mean:.3f}" if isinstance(mean, int | float) else "n/a")
-        table.add_row(*row)
+    result = paired_bootstrap(scores[0], scores[1])
+    if result is None:
+        _fail("These runs share no samples — there is nothing to pair.")
+        return
+
+    console.print(f"[bold]Paired comparison[/bold] on [cyan]{metric_name}[/cyan]\n")
+    table = Table("", run_id[0], run_id[1])
+    table.add_row("model", str(envs[0].get("model_ref", "?")), str(envs[1].get("model_ref", "?")))
+    table.add_row("mean", f"{result.mean_a:.4f}", f"{result.mean_b:.4f}")
     console.print(table)
+
+    # The 2x2 is the interesting part, and it is exactly what a difference of means hides: two runs
+    # can post identical means while disagreeing on half the questions.
+    discord = Table("Outcome", "n")
+    discord.add_row(f"only {run_id[0]} right", str(result.a_right_b_wrong))
+    discord.add_row(f"only {run_id[1]} right", str(result.b_right_a_wrong))
+    discord.add_row("both right", str(result.both_right))
+    discord.add_row("both wrong", str(result.both_wrong))
+    console.print(discord)
+
+    console.print(f"\n  paired n = {result.n_paired}")
     console.print(
-        "[dim]Confidence intervals and statistical-significance comparison land in "
-        "Milestone 6 — differences above are raw means only.[/dim]"
+        f"  difference = {result.mean_difference:+.4f}  "
+        f"95% CI [{result.ci_low:+.4f}, {result.ci_high:+.4f}]"
     )
+    verdict = result.verdict(run_id[0], run_id[1])
+    console.print(f"\n[bold]{verdict}[/bold]")
+
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(
+            json.dumps(
+                {
+                    "run_a": run_id[0],
+                    "run_b": run_id[1],
+                    "model_a": envs[0].get("model_ref"),
+                    "model_b": envs[1].get("model_ref"),
+                    "evaluator_fingerprint": digests[0],
+                    "metric": metric_name,
+                    "n_paired": result.n_paired,
+                    "mean_a": result.mean_a,
+                    "mean_b": result.mean_b,
+                    "mean_difference": result.mean_difference,
+                    "ci_low": result.ci_low,
+                    "ci_high": result.ci_high,
+                    "significant": result.significant,
+                    "underpowered": result.underpowered,
+                    "a_right_b_wrong": result.a_right_b_wrong,
+                    "b_right_a_wrong": result.b_right_a_wrong,
+                    "both_right": result.both_right,
+                    "both_wrong": result.both_wrong,
+                    "verdict": verdict,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        console.print(f"\n[dim]Wrote {output}[/dim]")
 
 
 @app.command()
@@ -709,11 +859,24 @@ def report(
 # --------------------------------------------------------------------------- leaderboard
 
 
+def _fci_cell(record: LeaderboardRecord) -> str:
+    """The index, or the reason there isn't one. Never a number with an asterisk."""
+    return "WITHHELD" if record.fci is None else f"{record.fci:.4f}"
+
+
 def _write_leaderboard_csv(path: Path, records: Sequence[LeaderboardRecord]) -> None:
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
         writer.writerow(
-            ["run_id", "model_ref", "provider", "fci", "band", "provisional", "created_at"]
+            [
+                "run_id",
+                "model_ref",
+                "provider",
+                "fci",
+                "verdict",
+                "critical_gate_failed",
+                "created_at",
+            ]
         )
         for record in records:
             writer.writerow(
@@ -721,9 +884,9 @@ def _write_leaderboard_csv(path: Path, records: Sequence[LeaderboardRecord]) -> 
                     record.run_id,
                     record.model_ref,
                     record.provider,
-                    record.fci,
-                    record.band,
-                    record.provisional,
+                    "" if record.fci is None else record.fci,
+                    record.verdict or "",
+                    record.critical_gate_failed,
                     record.created_at,
                 ]
             )
@@ -731,55 +894,77 @@ def _write_leaderboard_csv(path: Path, records: Sequence[LeaderboardRecord]) -> 
 
 def _write_leaderboard_md(path: Path, records: Sequence[LeaderboardRecord]) -> None:
     lines = [
-        "# FinanceBecnh leaderboard",
+        "# FinanceBench leaderboard",
         "",
-        "_All scores are provisional — the Finance Capability Index and critical gates are not "
-        "yet computed (Milestone 6)._",
+        "A **WITHHELD** index is not a missing number — it is a refusal. An index is only published "
+        "when the run covered enough to support the claim it makes and no critical gate failed; the "
+        "run's `capabilities.json` records `fci_withheld_because` in plain words.",
         "",
-        "| Run | Model | Provider | Created |",
-        "|---|---|---|---|",
+        "| Run | Model | Provider | FCI | Verdict | Critical gate | Created |",
+        "|---|---|---|---|---|---|---|",
     ]
     for record in records:
+        gate = "**FAILED**" if record.critical_gate_failed else "ok"
         lines.append(
-            f"| {record.run_id} | {record.model_ref} | {record.provider} | {record.created_at} |"
+            f"| {record.run_id} | {record.model_ref} | {record.provider} | {_fci_cell(record)} "
+            f"| {record.verdict or '—'} | {gate} | {record.created_at} |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _write_leaderboard_html(path: Path, records: Sequence[LeaderboardRecord]) -> None:
-    rows = (
-        "\n".join(
-            f"<tr><td>{html.escape(r.run_id)}</td><td>{html.escape(r.model_ref)}</td>"
-            f"<td>{html.escape(r.provider)}</td><td>{html.escape(r.created_at)}</td></tr>"
-            for r in records
+    def _row(r: LeaderboardRecord) -> str:
+        gate = (
+            "<span class='fail'>FAILED</span>"
+            if r.critical_gate_failed
+            else "<span class='pass'>ok</span>"
         )
-        or "<tr><td colspan='4'>No runs yet.</td></tr>"
-    )
+        css = "withheld" if r.fci is None else ""
+        return (
+            f"<tr><td>{html.escape(r.run_id)}</td><td>{html.escape(r.model_ref)}</td>"
+            f"<td>{html.escape(r.provider)}</td>"
+            f"<td class='{css}'>{html.escape(_fci_cell(r))}</td>"
+            f"<td>{html.escape(r.verdict or '—')}</td><td>{gate}</td>"
+            f"<td>{html.escape(r.created_at)}</td></tr>"
+        )
+
+    rows = "\n".join(_row(r) for r in records) or "<tr><td colspan='7'>No runs yet.</td></tr>"
     doc = f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>FinanceBecnh leaderboard</title>
+<title>FinanceBench leaderboard</title>
 <style>
   body {{ font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-          max-width: 900px; margin: 2rem auto; color: #1a1a1a; }}
+          max-width: 1100px; margin: 2rem auto; color: #1a1a1a; }}
   table {{ border-collapse: collapse; width: 100%; }}
   th, td {{ border: 1px solid #ddd; padding: 0.5rem 0.75rem; text-align: left; }}
   th {{ background: #f4f4f4; }}
+  .withheld {{ color: #666; font-style: italic; }}
+  .fail {{ color: #b00020; font-weight: 600; }}
+  .pass {{ color: #1b7f3b; }}
 </style>
 </head>
 <body>
-<h1>FinanceBecnh leaderboard</h1>
-<p><em>All scores are provisional — the Finance Capability Index and critical gates are not
-yet computed (Milestone 6).</em></p>
+<h1>FinanceBench leaderboard</h1>
+<p><em>A <strong>WITHHELD</strong> index is not a missing number — it is a refusal. An index is only
+published when the run covered enough to support the claim it makes and no critical gate failed; the
+run's <code>capabilities.json</code> records <code>fci_withheld_because</code> in plain words.</em></p>
 <table>
-<tr><th>Run</th><th>Model</th><th>Provider</th><th>Created</th></tr>
+<tr><th>Run</th><th>Model</th><th>Provider</th><th>FCI</th><th>Verdict</th>
+    <th>Critical gate</th><th>Created</th></tr>
 {rows}
 </table>
 </body>
 </html>
 """
     path.write_text(doc, encoding="utf-8")
+
+
+#: Benchmarks/groups whose runs are pipeline tests, not model evaluations. They use a REAL provider,
+#: so the mock filter does not catch them, and a `smoke` run would otherwise be ranked next to a
+#: 150-sample FinanceBench run as though the two said comparable things about a model.
+_NON_LEADERBOARD_BENCHMARKS: frozenset[str] = frozenset({"smoke"})
 
 
 def _load_leaderboard_records(runs_dir: Path) -> list[LeaderboardRecord]:
@@ -805,9 +990,16 @@ def _load_leaderboard_records(runs_dir: Path) -> list[LeaderboardRecord]:
         metrics = (
             json.loads(metrics_path.read_text(encoding="utf-8")) if metrics_path.is_file() else {}
         )
+        # `capabilities.json` is NESTED: {"dimensions": {...}, "scores": {...}, "verdict": ...}.
+        # This used to read it as if it were flat, so `agg.get("mean")` was looked up on the keys
+        # "dimensions"/"scores"/"verdict" — none of which has a `mean` — and every record silently
+        # got `capability_scores: {}`, `fci: null`, `verdict: null`. The leaderboard was structurally
+        # incapable of ever displaying a Finance Capability Index, and said "provisional" instead.
+        dimensions = capabilities.get("dimensions", {})
+        scores = capabilities.get("scores", {})
         capability_scores = {
             name: agg["mean"]
-            for name, agg in capabilities.items()
+            for name, agg in dimensions.items()
             if isinstance(agg, dict) and agg.get("mean") is not None
         }
         native_scores = {
@@ -825,13 +1017,31 @@ def _load_leaderboard_records(runs_dir: Path) -> list[LeaderboardRecord]:
                 else RunType.REAL.value,
             )
         )
+        # A run of the `smoke` group is a pipeline test with a handful of in-repo fixtures. It uses a
+        # REAL provider, so the mock filter does not catch it — and it would have walked onto the
+        # public leaderboard as if it were a model evaluation. Eligibility is about what was ASKED,
+        # not only about who answered.
+        benchmark = str(environment.get("benchmark_or_group", ""))
+        is_smoke = benchmark in _NON_LEADERBOARD_BENCHMARKS
+        eligible = run_type is RunType.REAL and not is_smoke
+        gates = (
+            json.loads((run_path / "gates.json").read_text(encoding="utf-8"))
+            if (run_path / "gates.json").is_file()
+            else {}
+        )
         records.append(
             LeaderboardRecord(
                 run_id=str(environment["run_id"]),
                 model_ref=str(environment["model_ref"]),
                 provider=str(environment["provider"]),
                 run_type=run_type,
-                eligible_for_leaderboard=run_type is RunType.REAL,
+                eligible_for_leaderboard=eligible,
+                fci=scores.get("finance_capability_index"),
+                verdict=capabilities.get("verdict"),
+                # An FCI is refused, not asterisked — so a run without one is not "provisional",
+                # it is a run whose index was withheld, and `fci_withheld_because` says why.
+                provisional=scores.get("finance_capability_index") is None,
+                critical_gate_failed=bool(gates.get("any_critical_gate_failed", False)),
                 capability_scores=capability_scores,
                 native_scores=native_scores,
                 coverage_summary=coverage,

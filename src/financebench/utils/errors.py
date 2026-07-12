@@ -1,4 +1,4 @@
-"""Typed exception hierarchy for FinanceBecnh.
+"""Typed exception hierarchy for FinanceBench.
 
 All library errors derive from :class:`FinanceBenchError`. Provider errors carry a
 ``retryable`` flag so the run engine can decide whether to retry without inspecting
@@ -22,7 +22,7 @@ __all__ = [
 
 
 class FinanceBenchError(Exception):
-    """Base class for all FinanceBecnh errors."""
+    """Base class for all FinanceBench errors."""
 
 
 class ConfigError(FinanceBenchError):

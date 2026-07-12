@@ -86,16 +86,26 @@ def aggregate_metric(metric_name: str, results: Sequence[MetricResult]) -> Metri
     metric that legitimately returns strings should report its own aggregate separately) rather
     than raising — an aggregate over zero numeric values is still a valid ``MetricAggregate``
     with ``mean=None``, not an error.
+
+    ``n`` is the number of samples this metric **actually graded**, not the number it was offered.
+    Those are different numbers whenever a metric returns not-applicable, and reporting the larger
+    one overstates the evidence a mean rests on: SECQUE's ``numeric_agreement`` was published as
+    ``n: 80`` when 18 of those samples contain no figures for it to agree with and the mean is over
+    62. The repo's own release schema already says ``n`` is "samples actually graded — excluding
+    not-applicable ones"; this makes the code obey it, and reports the excluded count rather than
+    hiding it.
     """
     numeric_values: list[float] = [
         (1.0 if result.value else 0.0) if isinstance(result.value, bool) else float(result.value)
         for result in results
         if isinstance(result.value, bool | int | float)
     ]
+    not_applicable = len(results) - len(numeric_values)
     if not numeric_values:
-        return MetricAggregate(metric_name=metric_name, n=len(results))
+        return MetricAggregate(metric_name=metric_name, n=0, n_not_applicable=not_applicable)
     return MetricAggregate(
         metric_name=metric_name,
-        n=len(results),
+        n=len(numeric_values),
+        n_not_applicable=not_applicable,
         mean=sum(numeric_values) / len(numeric_values),
     )

@@ -124,7 +124,14 @@ RETRIEVAL_VERSION = "2"
 #: committed: on the real FinanceBench run, document grounding was reported as 0.151 when the truth
 #: over the 89 gradable questions is 0.254. Every v1 capability score is wrong, low, and not
 #: comparable with a v2 one — which is precisely what a scoring-version bump is for.
-SCORING_VERSION = "2"
+#:
+#: v3: the *same* class of bug, in the opposite direction — and this one flattered. SECQUE's
+#: dimensions were all fed its preferred metric, an absence-of-hallucination rate, so both models
+#: published a Financial Core Score of **0.900** while agreeing with the expert's figures 8 % and
+#: 11 % of the time. ``document_grounding`` and ``table_text_reasoning`` are now fed the metrics that
+#: measure them (``secque_filing_identification``, ``secque_numeric_agreement``), and ``n`` counts
+#: only samples a metric actually graded. Every v2 SECQUE capability score is wrong and HIGH.
+SCORING_VERSION = "3"
 
 
 @dataclass(frozen=True)

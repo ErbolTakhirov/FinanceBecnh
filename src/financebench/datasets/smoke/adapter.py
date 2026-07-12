@@ -47,7 +47,7 @@ class SmokeDatasetAdapter(DatasetAdapter):
             official_source=(
                 "generated in-repo — this platform's own fixture, not a third-party benchmark"
             ),
-            repository_url="https://github.com/ErbolTakhirov/FinanceBecnh",
+            repository_url="https://github.com/ErbolTakhirov/FinanceBench",
             license="public-domain (synthetic, no copyrighted content)",
             redistribution_status="redistributable",
             official_splits=("dev",),

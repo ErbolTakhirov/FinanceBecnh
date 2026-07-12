@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "financebench"
-version = "0.1.0-alpha"
+version = "0.1.0-rc1"
 description = "An open, reproducible benchmark platform for evaluating the financial capabilities of LLMs."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
-authors = [{ name = "FinanceBecnh contributors" }]
+authors = [{ name = "FinanceBench contributors" }]
 keywords = [
     "llm",
     "benchmark",
@@ -72,10 +72,10 @@ dev = [
 financebench = "financebench.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/ErbolTakhirov/FinanceBecnh"
-Documentation = "https://github.com/ErbolTakhirov/FinanceBecnh/tree/main/docs"
-Repository = "https://github.com/ErbolTakhirov/FinanceBecnh"
-Issues = "https://github.com/ErbolTakhirov/FinanceBecnh/issues"
+Homepage = "https://github.com/ErbolTakhirov/FinanceBench"
+Documentation = "https://github.com/ErbolTakhirov/FinanceBench/tree/main/docs"
+Repository = "https://github.com/ErbolTakhirov/FinanceBench"
+Issues = "https://github.com/ErbolTakhirov/FinanceBench/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/financebench"]

@@ -1,6 +1,6 @@
 """Secret handling: env-only resolution, redaction, and artifact scanning.
 
-FinanceBecnh resolves API keys **only** from environment variables — never from CLI arguments,
+FinanceBench resolves API keys **only** from environment variables — never from CLI arguments,
 manifests, or config files — and never writes them into artifacts. This module provides the
 redaction helper used on any text that might contain a key, and the scanner used by tests (and a
 future ``secret-scan-artifacts``-style check) to prove no key reached a run's artifacts.

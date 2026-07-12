@@ -1,9 +1,9 @@
-FinanceBecnh
-Copyright 2026 FinanceBecnh contributors
+FinanceBench
+Copyright 2026 FinanceBench contributors
 
-This product includes software developed as part of the FinanceBecnh
+This product includes software developed as part of the FinanceBench
 open-source financial LLM benchmark platform
-(https://github.com/ErbolTakhirov/FinanceBecnh).
+(https://github.com/ErbolTakhirov/FinanceBench).
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ licensed and authored by the same project maintainer. No warranty is
 implied by this reuse; see the License for details.
 
 This project wraps or adapts several third-party financial-LLM benchmark
-datasets, each under its own license and terms. FinanceBecnh does not claim
+datasets, each under its own license and terms. FinanceBench does not claim
 ownership of, or relicense, any third-party dataset. See
 docs/research/benchmark_review.md and docs/licenses.md for the license and
 redistribution status of every wrapped benchmark.

@@ -1,7 +1,7 @@
 # Licenses
 
-FinanceBecnh itself is Apache-2.0 (see [`LICENSE`](../LICENSE) / [`NOTICE`](../NOTICE)). It wraps
-third-party datasets under their own, separate licenses — FinanceBecnh does not relicense any of
+FinanceBench itself is Apache-2.0 (see [`LICENSE`](../LICENSE) / [`NOTICE`](../NOTICE)). It wraps
+third-party datasets under their own, separate licenses — FinanceBench does not relicense any of
 them. Run `financebench licenses` for the live registry view, or see
 [`docs/research/benchmark_review.md`](research/benchmark_review.md) for full detail, including
 several cases where a benchmark's *actual* license or availability differs from what its own

@@ -24,6 +24,7 @@ from financebench.evaluation.failures import (
     attribute_failure,
 )
 from financebench.evaluation.gates import evaluate_gates, verdict_for
+from financebench.evaluation.metrics.base import Metric
 from financebench.evaluation.refusal import declined
 from financebench.evaluation.scoring import RunCoverage, compute_scores
 from financebench.execution.cache import ResponseCache
@@ -41,6 +42,7 @@ from financebench.schemas.common import (
 from financebench.schemas.manifest import DatasetManifest
 from financebench.schemas.metric import MetricResult
 from financebench.schemas.model_io import ModelSpec
+from financebench.schemas.prediction import Prediction
 from financebench.schemas.sample import CanonicalSample
 from financebench.storage.artifacts import ArtifactInputs, write_run_artifacts
 from financebench.utils.errors import ConfigError
@@ -48,6 +50,42 @@ from financebench.utils.ids import make_run_id
 from financebench.utils.timing import RealClock
 
 __all__ = ["EvalOutcome", "EvalRequest", "resolve_samples", "run_eval"]
+
+
+def _score_or_excuse(
+    metric: Metric, sample: CanonicalSample, prediction: Prediction
+) -> MetricResult:
+    """Score the sample — unless the provider never gave us an answer to score.
+
+    ``response is None`` is the same condition :func:`attribute_failure` already treats as
+    infrastructure: the call failed, so nothing the model did was observed.
+
+    A network timeout is **our** failure, not the model's. The gate denominator has always known this
+    (see ``n_scored`` below), but the metrics did not: they are handed ``answer=None`` for a timeout
+    and for a genuinely unparseable model reply alike, and graded both ``passed=False`` with the
+    reason "no parsed answer".
+
+    So on the SECQUE 3B run, three ``ollama request timed out after 180.0s`` errors — caused by GPU
+    contention with a *different* process on this machine — were published as the model getting three
+    financial questions wrong, in exactly the metrics the release wants to compare against the 7B
+    (which ran at a 300 s timeout and errored zero times). That comparison was partly measuring our
+    own timeout budget.
+
+    A metric that was never given an answer returns **not applicable**: not a zero, not a failure —
+    an absence of evidence, which the rollup already knows to exclude.
+    """
+    if prediction.response is None:
+        return MetricResult(
+            sample_id=sample.sample_id,
+            metric_name=metric.name,
+            value=None,
+            passed=None,
+            details={
+                "reason": "not applicable — the provider returned no answer to grade",
+                "error_type": prediction.error_type or "unknown",
+            },
+        )
+    return metric.score(sample, prediction)
 
 
 @dataclass(frozen=True)
@@ -166,6 +204,9 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         prompt_profile=request.prompt_profile,
         eval_mode=request.eval_mode,
         conversation_protocol=request.conversation_protocol,
+        retriever=request.retriever,
+        top_k=request.top_k,
+        document_scoped=request.document_scoped,
     )
     run_id = run_id_for(request)
     cache = ResponseCache(request.cache_dir, mode=config.cache_mode)
@@ -216,7 +257,7 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
     all_metric_results: list[MetricResult] = []
     for sample, prediction in zip(evaluated_samples, run_result.predictions, strict=True):
         for metric in metrics_for_run(sample.benchmark, profile, config.eval_mode):
-            all_metric_results.append(metric.score(sample, prediction))
+            all_metric_results.append(_score_or_excuse(metric, sample, prediction))
     metric_results = tuple(all_metric_results)
 
     # Every applicable metric is recorded (metric_details.jsonl/metrics.json), but only the
@@ -330,11 +371,27 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         )
     benchmark_scores = {name: sum(v) / len(v) for name, v in by_benchmark.items() if v}
 
+    # The sandbox gate is scored from the probes the run actually made. `None` — not 1.0 — when no
+    # tool was ever offered: a run that never tested the sandbox has said nothing about it, and a
+    # green tick would be a security claim with no evidence under it.
+    security_results = [
+        result for result in metric_results if result.metric_name == "tool_security_rejection"
+    ]
+    security_values = [
+        (1.0 if result.value else 0.0) if isinstance(result.value, bool) else float(result.value)
+        for result in security_results
+        if isinstance(result.value, bool | int | float)
+    ]
+    tool_security_rejection = (
+        sum(security_values) / len(security_values) if security_values else None
+    )
+
     gates = evaluate_gates(
         failures=failures,
         n_scored=n_scored,
         numeric_accuracy=numeric_accuracy,
         n_injection_samples=coverage.n_injection_samples,
+        tool_security_rejection=tool_security_rejection,
     )
     is_mock = run_type is RunType.MOCK_TEST
     scores = compute_scores(

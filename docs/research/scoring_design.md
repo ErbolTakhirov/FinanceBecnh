@@ -1,4 +1,4 @@
-# Scoring design: why one number is misleading, and what FinanceBecnh reports instead
+# Scoring design: why one number is misleading, and what FinanceBench reports instead
 
 ## The problem with a single accuracy average
 
@@ -29,7 +29,7 @@ GPT-4-Turbo-with-retrieval "incorrectly answered or refused" 81% of questions, a
 means something once "incorrect" and "refused" are broken apart, and once retrieval failure is
 separated from generation failure.
 
-## What FinanceBecnh reports instead
+## What FinanceBench reports instead
 
 For every run, the platform reports four distinct layers, deliberately never collapsed into each
 other:

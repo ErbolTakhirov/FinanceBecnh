@@ -30,7 +30,13 @@ class MetricAggregate(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     metric_name: str
+    #: Samples this metric actually **graded**. A not-applicable result is not evidence, and
+    #: counting it here would overstate how much a mean rests on.
     n: int
+    #: Samples the metric was offered and declined to grade. Reported rather than hidden: a mean
+    #: over 62 of 80 samples is a different claim from a mean over 80, and a reader is entitled to
+    #: know which one they are looking at.
+    n_not_applicable: int = 0
     mean: float | None = None
     ci_low: float | None = None
     ci_high: float | None = None

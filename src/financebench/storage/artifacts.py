@@ -390,7 +390,7 @@ def _write_summary_md(
 ) -> None:
     result = inputs.run_result
     lines = [
-        f"# FinanceBecnh run summary — `{inputs.run_id}`",
+        f"# FinanceBench run summary — `{inputs.run_id}`",
         "",
         *_markdown_watermark(inputs),
         f"- **Model:** `{inputs.model.ref}`",
@@ -400,7 +400,7 @@ def _write_summary_md(
         f"- **Samples evaluated:** {result.n_samples} "
         f"(errors: {result.n_errors}, cache hits: {result.n_cache_hits})",
         f"- **Created at:** {inputs.created_at}",
-        f"- **FinanceBecnh version:** {inputs.financebench_version}",
+        f"- **FinanceBench version:** {inputs.financebench_version}",
         "",
         "## Verdict",
         "",
@@ -429,8 +429,19 @@ def _write_summary_md(
             "|---|---|---|---|",
         ]
         for gate in inputs.gates.gates:
-            mark = "PASS" if gate.passed else "**FAIL**"
-            lines.append(f"| {gate.gate_name} | {gate.threshold} | {gate.observed} | {mark} |")
+            # A gate the run had nothing to test with is NOT a failing gate, and it is not a passing
+            # one either — the same rule the HTML renderer already applies. `passed=None` fell to the
+            # else branch here and printed **FAIL**, so every summary.md on disk reported a
+            # fabricated failure of the prompt-injection gate for runs that contained no injection
+            # samples, contradicting the `"skipped": true` in its own gates.json.
+            if gate.skipped:
+                mark = "SKIPPED"
+            elif gate.passed:
+                mark = "PASS"
+            else:
+                mark = "**FAIL**"
+            observed = "—" if gate.observed is None else gate.observed
+            lines.append(f"| {gate.gate_name} | {gate.threshold} | {observed} | {mark} |")
         if inputs.gates.any_critical_gate_failed:
             lines += [
                 "",
@@ -575,7 +586,7 @@ def _write_report_html(
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>FinanceBecnh report — {esc(inputs.run_id)}</title>
+<title>FinanceBench report — {esc(inputs.run_id)}</title>
 <style>
   body {{ font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
           margin: 2rem auto; max-width: 900px; color: #1a1a1a; line-height: 1.5; }}
@@ -597,7 +608,7 @@ def _write_report_html(
 </style>
 </head>
 <body>
-  <h1>FinanceBecnh run report</h1>
+  <h1>FinanceBench run report</h1>
   {_html_watermark(inputs)}
   <p><span class="badge">{esc(inputs.run_id)}</span></p>
   <ul>

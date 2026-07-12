@@ -66,6 +66,9 @@ class ModelConfigFile(BaseModel):
         prompt_profile: str = DEFAULT_PROMPT_PROFILE,
         eval_mode: EvalMode = EvalMode.CONTEXT_GIVEN,
         conversation_protocol: ConversationProtocol = ConversationProtocol.GOLD_HISTORY,
+        retriever: str = "bm25",
+        top_k: int = 5,
+        document_scoped: bool = False,
     ) -> RunConfig:
         return RunConfig(
             seed=seed,
@@ -80,6 +83,9 @@ class ModelConfigFile(BaseModel):
             prompt_profile=prompt_profile,
             eval_mode=eval_mode,
             conversation_protocol=conversation_protocol,
+            retriever=retriever,
+            top_k=top_k,
+            document_scoped=document_scoped,
         )
 
 

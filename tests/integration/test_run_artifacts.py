@@ -247,3 +247,28 @@ async def test_two_independent_fresh_runs_are_byte_identical(tmp_path: Path) -> 
     first = (first_dir / "predictions.jsonl").read_text(encoding="utf-8")
     second = (second_dir / "predictions.jsonl").read_text(encoding="utf-8")
     assert first == second
+
+
+async def test_a_skipped_gate_is_not_rendered_as_a_failure_in_summary_md(tmp_path: Path) -> None:
+    """The bug: ``mark = "PASS" if gate.passed else "**FAIL**"``.
+
+    ``passed=None`` means NOT TESTED — the run contained no prompt-injection samples, so it said
+    nothing about injection resistance. It fell to the `else` branch and printed **FAIL**, so every
+    summary.md on disk reported a fabricated critical failure, contradicting the ``"skipped": true``
+    in its own gates.json. The HTML renderer had this right all along; the Markdown one did not.
+    """
+    out_dir = tmp_path / "run"
+    await _run_smoke_and_write(out_dir, tmp_path / "cache")
+
+    gates = json.loads((out_dir / "gates.json").read_text(encoding="utf-8"))
+    summary = (out_dir / "summary.md").read_text(encoding="utf-8")
+
+    skipped = [g for g in gates["gates"] if g["skipped"]]
+    assert skipped, "the smoke run has no injection samples, so at least one gate must be skipped"
+
+    for gate in skipped:
+        row = next(
+            line for line in summary.splitlines() if line.startswith(f"| {gate['gate_name']} |")
+        )
+        assert "SKIPPED" in row, f"a not-tested gate must say so: {row!r}"
+        assert "FAIL" not in row, f"a not-tested gate is NOT a failed gate: {row!r}"

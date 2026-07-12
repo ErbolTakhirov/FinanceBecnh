@@ -112,8 +112,30 @@ def macro_average(values: Sequence[float]) -> float | None:
 #:
 #: A dimension is scored by the metric that measures it. Anything else is a category error that
 #: happens to compile.
+#:
+#: The same error reached a real report a second time, through SECQUE, and it is worth stating
+#: plainly because the number it produced was *flattering*. SECQUE's preferred metric is
+#: ``secque_unsupported_numeric_claim`` — an **absence-of-hallucination rate**, i.e. "did this answer
+#: avoid inventing a figure". Every dimension SECQUE's tags reach was fed that metric, so
+#: ``document_grounding``, ``table_text_reasoning`` (and, before the tags were fixed,
+#: ``analytical_insight``) all reported exactly **0.900**, and so did the Financial Core Score — for
+#: the 3B *and* the 7B, identically.
+#:
+#: What the run actually measured, in the same file: the models agree with the expert's figures
+#: **8 %** and **11 %** of the time, and name the **wrong company** in 41 % and 55 % of answers. The
+#: two metrics that discriminate between the models fed no dimension at all, and a model that emitted
+#: no numbers whatsoever would have scored **1.000** on "document grounding".
+#:
+#: Lookup is keyed ``(sample_id, metric_name)``, so naming a benchmark-specific metric here cannot
+#: contaminate another benchmark: a FinanceBench sample has no ``secque_filing_identification``
+#: result, so it falls through to its own preferred metric.
 _DIMENSION_METRIC: dict[CapabilityDimension, tuple[str, ...]] = {
     CapabilityDimension.CALIBRATION_AND_REFUSAL: ("smb_cfo_refusal_correctness",),
+    # Grounding asks "is this answer about the right document?" — not "did it avoid inventing a
+    # number", which a silent model passes trivially.
+    CapabilityDimension.DOCUMENT_GROUNDING: ("secque_filing_identification",),
+    # Reading figures out of a filing's tables and prose is what numeric agreement measures.
+    CapabilityDimension.TABLE_TEXT_REASONING: ("secque_numeric_agreement",),
 }
 
 

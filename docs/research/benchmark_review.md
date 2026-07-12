@@ -1,6 +1,6 @@
 # Benchmark research review
 
-This document is the research artifact behind FinanceBecnh's dataset registry. Every row below
+This document is the research artifact behind FinanceBench's dataset registry. Every row below
 was verified live against the actual GitHub repo, HuggingFace dataset card, and/or paper — not
 assumed from the paper abstract alone — because several of the "obvious" sources turned out to
 be wrong, stale, or unofficial (see [Cross-cutting findings](#cross-cutting-findings)). Adapter
@@ -73,7 +73,7 @@ before treating a GitHub URL as authoritative.
 
 **No public benchmark tests Russian financial language.** Every "bilingual" claim surfaced in
 this research (FinBen's EN/ES trading tasks, BizFinBench's and FinMTM's EN/ZH coverage) is a
-different language pair than EN/RU. FinanceBecnh's entire Russian-language coverage comes from
+different language pair than EN/RU. FinanceBench's entire Russian-language coverage comes from
 the custom SMB-CFO paired EN/RU cases (Milestone 4) — there is no external benchmark to
 cross-check against, which is itself a limitation worth stating plainly in every report that
 includes a `bilingual_en_ru` score.

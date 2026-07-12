@@ -1,14 +1,18 @@
 cff-version: 1.2.0
-title: "CFOBenchmark: an honest evaluation suite for financial LLMs"
+title: "FinanceBench: an honest evaluation suite for financial LLMs"
 message: "If you use this software, please cite it."
 type: software
 authors:
   - family-names: Takhirov
     given-names: Erbol
 repository-code: "https://github.com/ErbolTakhirov/CFOBenchmark"
-license: MIT
+# Apache-2.0, matching LICENSE and NOTICE. This said MIT until the release audit caught it — the
+# two are not interchangeable (Apache-2.0 carries an express patent grant and attribution
+# requirements MIT does not), and a citation file that contradicts the licence file leaves a user
+# unable to know what they may actually do with the code.
+license: Apache-2.0
 version: 0.1.0-rc1
-date-released: "2026-07-11"
+date-released: "2026-07-12"
 abstract: >
   An evaluation suite for financial language models that reports what it measured and refuses to
   report what it did not. It wraps FinQA, TAT-QA, FinanceReasoning, FinanceBench, ConvFinQA and

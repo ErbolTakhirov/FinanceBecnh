@@ -3,7 +3,7 @@
 Every run records (see `environment.json`, `run_config.json`, `model_manifest.json`,
 `prompt_manifest.json`, `dataset_manifest.json` under `runs/{run_id}/`):
 
-- FinanceBecnh version, git commit + dirty flag, Python version, OS
+- FinanceBench version, git commit + dirty flag, Python version, OS
 - The exact model reference, provider, and generation parameters (`RunConfig`)
 - The prompt version and a SHA-256 hash of the system prompt text
 - The dataset manifest(s) for every benchmark evaluated

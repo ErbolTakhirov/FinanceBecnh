@@ -1,8 +1,8 @@
-# FinanceBecnh
+# FinanceBench
 
 **An open, reproducible benchmark platform for evaluating the financial capabilities of LLMs.**
 
-FinanceBecnh evaluates local models, OpenAI-compatible local servers, cloud/API models,
+FinanceBench evaluates local models, OpenAI-compatible local servers, cloud/API models,
 text-only and multimodal models, RAG systems, and financial tool-using agents — combining the
 strongest ideas from existing financial benchmarks (FinQA, ConvFinQA, TAT-QA, FinanceBench,
 FinanceReasoning, SECQUE, FinBen, XFinBench, FinMME, and more) while preserving each benchmark's
@@ -25,7 +25,7 @@ score differently — and matter differently — depending on what you're deploy
 [`docs/research/scoring_design.md`](docs/research/scoring_design.md) for the full reasoning and
 [`docs/scoring.md`](docs/scoring.md) for the mechanics.
 
-FinanceBecnh instead reports, for every run:
+FinanceBench instead reports, for every run:
 
 - **Native, benchmark-specific metrics** (e.g. FinQA's execution/program accuracy, TAT-QA's
   numeracy-aware F1) — never flattened away.
@@ -55,8 +55,8 @@ Full formula, weights, and gate thresholds: [`docs/scoring.md`](docs/scoring.md)
 Requires Python 3.11+.
 
 ```bash
-git clone https://github.com/ErbolTakhirov/FinanceBecnh.git
-cd FinanceBecnh
+git clone https://github.com/ErbolTakhirov/FinanceBench.git
+cd FinanceBench
 pip install -e ".[dev]"
 ```
 

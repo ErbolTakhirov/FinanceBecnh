@@ -60,6 +60,15 @@ class RunConfig(BaseModel):
     #: measure different things and their scores are never mixed — so this is part of the run's
     #: identity, not a display option. Ignored by single-turn benchmarks, which have no history.
     conversation_protocol: ConversationProtocol = ConversationProtocol.GOLD_HISTORY
+    #: The retrieval arm, for a ``retrieval_required`` run. Recorded here because it is part of a
+    #: run's identity in exactly the way the prompt profile is: BM25 over one filing and hybrid over
+    #: 12,013 pages are different experiments, and a run artifact that does not say which one it was
+    #: cannot be reproduced or resumed. `resume` previously rebuilt the request WITHOUT these, so
+    #: resuming a hybrid/document-scoped run silently re-ran it as bm25/k=5/open-corpus and
+    #: overwrote the original arm's artifacts in place, under the original arm's run id.
+    retriever: str = "bm25"
+    top_k: int = 5
+    document_scoped: bool = False
     judge_config: str | None = None
     max_cost_usd: float | None = None
     offline: bool = False
