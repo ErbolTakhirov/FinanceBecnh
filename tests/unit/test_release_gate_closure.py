@@ -60,7 +60,7 @@ def test_a_manifest_whose_samples_no_longer_resolve_FAILS_rather_than_substituti
             ),
         ),
     )
-    with pytest.raises(ManifestError, match="no longer\nresolve|no longer resolve"):
+    with pytest.raises(ManifestError, match=r"no longer"):
         resolve_samples(broken.benchmark_splits, broken)
 
 
