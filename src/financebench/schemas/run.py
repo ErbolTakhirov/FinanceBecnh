@@ -69,6 +69,14 @@ class RunConfig(BaseModel):
     retriever: str = "bm25"
     top_k: int = 5
     document_scoped: bool = False
+    #: The frozen sample manifest this run asked its questions from, and the hash of that question
+    #: set. Both are recorded because a run's *questions* are part of its identity — and because
+    #: `resume` must be able to reconstruct them: without this, resuming a 150-sample manifest run
+    #: fell back to `limit: null` and reloaded the ENTIRE benchmark (2,815 samples for
+    #: finqa+tatqa), quietly turning a resume into a completely different, far larger evaluation
+    #: that would then have overwritten the original run's artifacts.
+    sample_manifest_path: str | None = None
+    sample_manifest_id_hash: str | None = None
     judge_config: str | None = None
     max_cost_usd: float | None = None
     offline: bool = False

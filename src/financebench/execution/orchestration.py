@@ -114,6 +114,8 @@ class EvalRequest:
     #: A frozen sample manifest. When set, the run asks EXACTLY the questions it names, and a
     #: named question that no longer resolves fails the run rather than being quietly replaced.
     sample_manifest: SampleManifest | None = None
+    #: Where that manifest lives on disk, so `resume` can reload the SAME questions.
+    sample_manifest_path: str | None = None
 
 
 @dataclass(frozen=True)
@@ -249,6 +251,10 @@ async def run_eval(request: EvalRequest, *, out_dir: Path) -> EvalOutcome:
         retriever=request.retriever,
         top_k=request.top_k,
         document_scoped=request.document_scoped,
+        sample_manifest_path=request.sample_manifest_path,
+        sample_manifest_id_hash=(
+            request.sample_manifest.id_hash if request.sample_manifest is not None else None
+        ),
     )
     run_id = run_id_for(request)
     cache = ResponseCache(request.cache_dir, mode=config.cache_mode)

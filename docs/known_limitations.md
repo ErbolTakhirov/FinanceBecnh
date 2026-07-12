@@ -102,3 +102,17 @@ understatement.**
 
 A good score means a model did well on these questions, on this hardware, on this date. It does not
 clear a model to act on real money without a human reading the output.
+
+## A tool run cannot be re-scored cheaply
+
+Every other run is cached: the response cache keys on the request, so re-scoring one under a new
+evaluator (`financebench resume`) replays the model's saved answers and costs **nothing**. That is how
+the SECQUE runs were moved onto a common fingerprint for free.
+
+**Tool-assisted runs are deliberately not cached** (`engine.py`). An agent run is a *conversation*
+whose later turns depend on what the tools said in the earlier ones — there is no single request to
+hash. So "re-score the tool run" means **re-run every turn against the model**.
+
+The practical consequence, and it is worth knowing before you bump a metric version: a fingerprint
+change after a tool run has completed costs you that entire run again. Freeze the evaluator *before*
+the tool experiment, not after.

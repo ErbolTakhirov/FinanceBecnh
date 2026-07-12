@@ -590,6 +590,7 @@ def eval_(
         top_k=top_k,
         document_scoped=document_scoped,
         sample_manifest=sample_manifest,
+        sample_manifest_path=str(manifest) if manifest is not None else None,
     )
     if sample_manifest is not None:
         console.print(
@@ -657,6 +658,29 @@ def resume(
         splits_by_dataset.setdefault(str(record["benchmark"]), str(record["split"]))
     benchmark_splits = tuple(sorted(splits_by_dataset.items()))
 
+    # A manifest run asked a FROZEN set of questions, and a resume must ask the same ones. Without
+    # this, resume fell back to `limit: null` and reloaded the entire benchmark — 2,815 samples for
+    # a 150-sample finqa+tatqa manifest — turning a resume into a completely different, far larger
+    # evaluation that would then have overwritten the original run's artifacts under its own id.
+    resumed_manifest = None
+    manifest_path = run_config.get("sample_manifest_path")
+    if manifest_path:
+        try:
+            resumed_manifest = load_sample_manifest(Path(manifest_path))
+        except (ConfigError, ManifestError) as exc:
+            _fail(f"cannot resume {run_id}: its frozen manifest could not be loaded.\n{exc}")
+            return
+        recorded_hash = run_config.get("sample_manifest_id_hash")
+        if recorded_hash and resumed_manifest.id_hash != recorded_hash:
+            _fail(
+                f"cannot resume {run_id}: the manifest at {manifest_path} has CHANGED since the run "
+                f"(id_hash {resumed_manifest.id_hash} != recorded {recorded_hash}).\n"
+                "Resuming would ask a different set of questions and publish the answers under the "
+                "original run's id."
+            )
+            return
+        benchmark_splits = resumed_manifest.benchmark_splits
+
     # A resume must reconstruct the run that WAS, not a run with the same name. Every field below is
     # part of the run's identity, and every one of them used to be dropped: resume rebuilt the
     # request with library defaults, so resuming a `retrieval_required` / hybrid / document-scoped /
@@ -682,6 +706,8 @@ def resume(
         retriever=str(run_config.get("retriever", "bm25")),
         top_k=int(run_config.get("top_k", 5)),
         document_scoped=bool(run_config.get("document_scoped", False)),
+        sample_manifest=resumed_manifest,
+        sample_manifest_path=manifest_path,
     )
 
     # The rebuilt request must land on the run id it came from. If it does not, some part of the

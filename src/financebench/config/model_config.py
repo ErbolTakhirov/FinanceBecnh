@@ -69,6 +69,8 @@ class ModelConfigFile(BaseModel):
         retriever: str = "bm25",
         top_k: int = 5,
         document_scoped: bool = False,
+        sample_manifest_path: str | None = None,
+        sample_manifest_id_hash: str | None = None,
     ) -> RunConfig:
         return RunConfig(
             seed=seed,
@@ -86,6 +88,8 @@ class ModelConfigFile(BaseModel):
             retriever=retriever,
             top_k=top_k,
             document_scoped=document_scoped,
+            sample_manifest_path=sample_manifest_path,
+            sample_manifest_id_hash=sample_manifest_id_hash,
         )
 
 
