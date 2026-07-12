@@ -66,19 +66,36 @@ is not evidence.
 So SECQUE's analytical dimension reports `NOT_EVALUATED`. **Never zero.** A zero would say the model
 failed; the truth is that no instrument here can measure it.
 
-### The tools do not help, because the model does not use them
+### The tools do not merely fail to help. They do measurable HARM.
 
-qwen2.5:3b, live, tool-assisted:
+The paired experiment: the **same 150 sample ids**, run twice on qwen2.5:3b.
+
+| | direct | tool-assisted | difference | 95% CI (paired bootstrap) |
+|---|---|---|---|---|
+| FinQA answer accuracy | **0.147** | **0.027** | +0.120 | `[+0.040, +0.213]` |
+| TAT-QA exact match | **0.173** | **0.067** | +0.107 | `[+0.027, +0.200]` |
+
+Both intervals exclude zero. FinQA 2×2: `only-direct-right 11 / only-tools-right 2 / both-right 0`.
+
+**And it is not because the model used the tools badly. It is because it barely used them at all:**
 
 ```
-tool_selection_accuracy   0.167    5 of 6 questions: called NO TOOL AT ALL
-tool_execution_success    0.000    its one call had invalid arguments
-tool_result_utilization   None     not applicable — nothing ever executed
-tool_security_rejection   1.000    never probed the sandbox
+tool_invocation_rate    0.013    it called a tool on 2 of 150 questions
+tool_execution_success  0.500    n=2 — of those two calls, one ran
+tool_argument_validity  0.500    n=2 — the other had malformed arguments
+tool_result_utilization 1.000    n=1 — the one result it got, it used
+tool_error_recovery     0.000    n=1 — after the failed call, it never recovered
+tool_security_rejection 1.000    n=150 — the sandbox was never breached
 ```
 
-That `None` is the discipline holding. A `0.0` would read as *"the model ignored its tools"*, which
-would be false — no tool ever ran, so there was no result to ignore.
+So the damage was done by the **agent scaffolding itself** — the JSON envelope asking the model to
+choose between emitting a tool call and emitting an answer — not by the tools. A 3B model asked to
+route its reasoning through a protocol gets worse at the underlying arithmetic *while ignoring the
+protocol*, and spends 27% more tokens doing it.
+
+The `n=1` and `n=2` above are printed, not hidden. `tool_result_utilization = 1.000` over a single
+sample is not a claim about anything, and a report that showed it as a bare `1.000` would be lying by
+omission.
 
 ---
 
@@ -90,7 +107,7 @@ would be false — no tool ever ran, so there was no result to ignore.
 | Evaluator fingerprint | `real_data_live_verified` | parser + metrics + adapters + retrieval + scoring. A test fails if a registered metric is unversioned. |
 | Gold-leakage prevention | `real_data_live_verified` | structural (no field can carry gold), scrub-equivalence, and a positional check for ConvFinQA, where prior-turn gold legitimately *is* in the prompt. |
 | Retrieval: BM25 | `real_data_live_verified` | open-corpus **and** genuinely document-scoped. |
-| Retrieval: dense / hybrid | `partial` | implemented; the 12,013-page embedding index is **still building** at time of writing (checkpointed, resumable). No dense numbers are claimed until it completes. |
+| Retrieval: dense / hybrid | `real_data_live_verified` | The 11,948-page index completed. Full 6-arm ablation: hybrid/doc-scoped is best at **38.7%** page recall @20; dense is **dramatically worse at finding the company** (27.3% document recall vs BM25's 79.3%) — the questions name a company and a year, which is a lexical match, and the embedding blurs exactly that. |
 | Ollama provider | `real_data_live_verified` | every real number in `runs/` came from it. |
 | OpenAI / Anthropic / Gemini / OpenRouter | `real_data_not_live_verified` | implemented, 38 tests against a mocked transport. **No API keys exist here, so none has ever made a successful call.** `financebench verify-providers` calls the real endpoint and labels them by what happens — not by a class attribute. |
 | Confidence intervals | `real_data_live_verified` | bootstrap, on every metric. They stopped me reporting a regression that wasn't there. |
