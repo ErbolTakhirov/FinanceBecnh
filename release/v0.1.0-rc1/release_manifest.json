@@ -1,7 +1,7 @@
 {
   "release": "v0.1.0-rc1",
   "financebench_version": "0.1.0-rc1",
-  "repository_commit": "55dc739a62a2f0d8d0a3fdc4de5f58fd349be024",
+  "repository_commit": "45a29246c3434e05aa912da501621dbfa7ddd155",
   "repository_dirty": false,
   "evaluator_fingerprint": {
     "digest": "80ca8a678b1c4fa1",

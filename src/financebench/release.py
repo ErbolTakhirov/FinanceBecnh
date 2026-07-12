@@ -216,7 +216,10 @@ def check_release_gates(out_dir: Path, *, runs_dir: Path) -> list[GateOutcome]:
             last = f"{last}  <-- SKIPS ARE NOT PASSES"
         gates.append(GateOutcome(label, passed, last))
 
-    code, out = run(["git", "status", "--porcelain"])
+    # The release directory is EXCLUDED, because this very command writes into it — the manifest and
+    # the checksums are generated a few lines above. A gate that fails because of the artifact the
+    # gate-runner just produced is not measuring anything.
+    code, out = run(["git", "status", "--porcelain", "--", ":!release/"])
     gates.append(GateOutcome("clean working tree", not out.strip(), out.strip()[:120] or "clean"))
 
     remote_code, remote = run(["git", "rev-parse", "origin/main"])
@@ -334,12 +337,12 @@ def check_release_gates(out_dir: Path, *, runs_dir: Path) -> list[GateOutcome]:
         )
     )
 
-    for label, path in (
+    for label, artifact in (
         ("report generated", Path("release") / out_dir.name / "report.md"),
         ("manual validity review", Path("release") / out_dir.name / "manual_validity_review.md"),
         ("limitations documented", Path("docs/known_limitations.md")),
         ("reproduction guide", Path("release") / out_dir.name / "reproduction.md"),
     ):
-        gates.append(GateOutcome(label, path.is_file(), str(path)))
+        gates.append(GateOutcome(label, artifact.is_file(), str(artifact)))
 
     return gates
