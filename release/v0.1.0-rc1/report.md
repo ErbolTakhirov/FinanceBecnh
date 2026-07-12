@@ -88,46 +88,68 @@ across SMB-CFO's **24 task families**, plus 10 adversarial prompt-injection samp
 run whose coverage can support an index at all: the FCI is withheld unless **one** run asked about
 SMB-CFO *and* document grounding *and* refusal together.
 
-**qwen2.5:3b, 220/220 evaluated, zero provider errors:**
+Both models: **220/220 evaluated, zero provider errors**, same manifest, same evaluator.
 
-| | |
-|---|---|
-| **Finance Capability Index** | **WITHHELD** — a critical gate failed |
-| verdict | **NOT_FINANCE_READY** |
-| `numeric_accuracy` | **0.116** (gate: ≥ 0.50) — **FAIL, critical** |
-| `invalid_output_rate` | **0.173** (gate: ≤ 0.10) — **FAIL** |
-| `prompt_injection_obeyed_rate` | **0.000** (gate: 0.0) — **PASS** |
-| `catastrophic_numeric_error_rate` | 0.036 (gate: ≤ 0.05) — PASS |
-| `failed_refusal_rate` | 0.000 — PASS |
-| `unsupported_claim_rate` | 0.000 — PASS |
+| metric | qwen2.5:3b | qwen2.5:7b |
+|---|---|---|
+| `convfinqa_turn_accuracy` | 0.300 (n=20) | 0.350 (n=20) |
+| `exact_match` | 0.077 (n=220) | 0.086 (n=220) |
+| `finance_reasoning_accuracy` | 0.000 (n=40) | 0.025 (n=40) |
+| `financebench_answer_accuracy` | 0.231 (n=26) | 0.423 (n=26) |
+| `financebench_citation_accuracy` | 0.000 (n=1) | 0.000 (n=39) |
+| `financebench_unsupported_numeric_claim` | 0.625 (n=40) | 0.725 (n=40) |
+| `finqa_answer_accuracy` | 0.150 (n=40) | 0.350 (n=40) |
+| `smb_cfo_accuracy` | 0.000 (n=37) | 0.000 (n=37) |
+| `smb_cfo_injection_resistance` | 1.000 (n=2) | 1.000 (n=2) |
+| `smb_cfo_refusal_correctness` | 0.950 (n=40) | 0.950 (n=40) |
+| `tatqa_exact_match` | 0.200 (n=40) | 0.225 (n=40) |
+| `tatqa_f1` | 0.311 (n=40) | 0.324 (n=40) |
+| `tatqa_scale_accuracy` | 0.725 (n=40) | 0.700 (n=40) |
 
-The index is **refused, not asterisked.** `capabilities.json` records why in plain words.
+| | 3B | 7B |
+|---|---|---|
+| **Finance Capability Index** | **WITHHELD** | **WITHHELD** |
+| verdict | **NOT_FINANCE_READY** | **NOT_FINANCE_READY** |
+| `numeric_accuracy` (gate ≥ 0.50) | **0.116 — FAIL, critical** | **0.189 — FAIL, critical** |
+| `invalid_output_rate` (gate ≤ 0.10) | **0.173 — FAIL** | **0.150 — FAIL** |
+| `prompt_injection_obeyed_rate` (gate 0.0) | **0.000 — PASS** | **0.000 — PASS** |
+| `catastrophic_numeric_error_rate` (≤ 0.05) | 0.036 — PASS | 0.032 — PASS |
+| `unsupported_claim_rate` (≤ 0.10) | 0.000 — PASS | 0.000 — PASS |
 
-### Two zeros, and they are different failures
+The index is **refused, not asterisked.** `capabilities.json` records why in plain words. The 7B is
+better at almost everything — FinQA 0.350 vs 0.150, FinanceBench 0.423 vs 0.231 — and it is **not
+enough to clear a single critical gate.**
 
-`finance_reasoning_accuracy = 0.000` (n=40) and `smb_cfo_accuracy = 0.000` (n=37). Both are real. They
-are not the same thing.
+### `smb_cfo_accuracy = 0.0000` for BOTH models — and it is a FORMAT failure
 
-**FinanceReasoning** is a genuine reasoning failure: the model emits numbers, and they are simply
-wrong — 1328 where the answer is 1152; 368 where it is 22.
+Neither model answers a single small-business CFO question correctly. That benchmark is this project's
+actual subject, and its gold answers come from **Python oracles, never an LLM** — so it is the one
+benchmark here that cannot have been memorised.
 
-**SMB-CFO is a FORMAT failure.** The model answers in *its own JSON shape*:
+But the zero is not an arithmetic failure. The model answers in **its own JSON shape**:
 
 ```json
 {"monthly_budget": 2595, "category": "Cloud hosting"}
 {"data": [{"supplier": "Northwind Studio", "amount": 2486.58}]}
 ```
 
-when the prompt asked for `{"answer": ..., "numeric_value": ...}`. It may well hold the right number —
-it simply cannot say it in the requested envelope, so nothing can be read out. That is counted
-separately (**38 `invalid_structured_response`** of 220), and it is what fails the
-`invalid_output_rate` gate.
+when the prompt asked for `{"answer": ..., "numeric_value": ...}`. It may well hold the right number
+— it simply cannot say it in the requested envelope, so nothing can be read out. That is counted
+separately (**38 `invalid_structured_response`** of 220 for the 3B, 33 for the 7B) and it is what fails
+the `invalid_output_rate` gate.
 
-The distinction matters because the fixes are opposite: one needs a better model, the other needs a
+`finance_reasoning_accuracy` — 0.000 (3B) and 0.025 (7B) — *is* a genuine reasoning failure: the models
+emit numbers and they are simply wrong (1328 where the answer is 1152; 368 where it is 22).
+
+**The distinction matters because the fixes are opposite.** One needs a better model; the other needs a
 parser or a prompt. A single "accuracy: 0.0" would have sent you to fix the wrong one.
 
+Meanwhile `smb_cfo_refusal_correctness` is **0.950** for both: when the books genuinely cannot answer
+a question, both models correctly decline. They know what they do not know. They just cannot say what
+they do.
+
 **The prompt-injection gate fired for the first time in this project's history** — the release manifest
-is the first run to carry real injection samples — and the model **resisted every one**.
+is the first run to carry real injection samples — and **both models resisted every one**.
 
 ---
 
