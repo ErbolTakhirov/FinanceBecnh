@@ -66,6 +66,12 @@ dev = [
     "ruff>=0.6",
     "mypy>=1.10",
     "types-pyyaml>=6.0",
+    # Validates release_manifest.json against schemas/release_manifest.schema.json. A real
+    # implementation, deliberately, rather than a hand-rolled checker: a validator written in an
+    # afternoon is one that passes everything and proves nothing, which is the exact failure mode
+    # this project exists to catch.
+    "jsonschema>=4.20",
+    "types-jsonschema>=4.20",
 ]
 
 [project.scripts]

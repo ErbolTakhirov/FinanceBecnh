@@ -24,7 +24,36 @@ from financebench.evaluation.fingerprint import current_fingerprint
 from financebench.schemas.sample_manifest import load_sample_manifest
 from financebench.utils.gitmeta import git_commit, git_is_dirty
 
-__all__ = ["GateOutcome", "build_release", "check_release_gates", "sha256_file"]
+__all__ = [
+    "GateOutcome",
+    "build_release",
+    "check_release_gates",
+    "sha256_file",
+    "validate_release_manifest",
+]
+
+#: The schema the release manifest must satisfy. It is a real JSON Schema validated by a real
+#: validator — not a hand-rolled key check, which is a validator that passes everything and proves
+#: nothing.
+SCHEMA_PATH = Path("schemas/release_manifest.schema.json")
+
+
+def validate_release_manifest(manifest: dict[str, Any]) -> list[str]:
+    """Every way this manifest violates the schema. Empty list = valid.
+
+    A release manifest that does not satisfy its own published schema is worse than no schema: it
+    tells a reader the file has a contract, and then breaks it.
+    """
+    import jsonschema
+
+    if not SCHEMA_PATH.is_file():
+        return [f"schema not found at {SCHEMA_PATH}"]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    validator = jsonschema.Draft202012Validator(schema)
+    return [
+        f"{'/'.join(str(p) for p in error.absolute_path) or '<root>'}: {error.message}"
+        for error in sorted(validator.iter_errors(manifest), key=lambda e: list(e.absolute_path))
+    ]
 
 
 def sha256_file(path: Path) -> str:
@@ -240,6 +269,34 @@ def check_release_gates(out_dir: Path, *, runs_dir: Path) -> list[GateOutcome]:
             str(manifest_path),
         )
     )
+    if manifest_path.is_file():
+        errors = validate_release_manifest(json.loads(manifest_path.read_text(encoding="utf-8")))
+        gates.append(
+            GateOutcome(
+                "release manifest validates against its schema",
+                not errors,
+                f"{len(errors)} violation(s): {errors[:2]}" if errors else "valid",
+            )
+        )
+    else:
+        gates.append(
+            GateOutcome("release manifest validates against its schema", None, "no manifest")
+        )
+
+    # The manifest exists to answer "can somebody else get these numbers?". A manifest that records
+    # a DIRTY working tree cannot be reproduced from its own commit, and says so.
+    if manifest_path.is_file():
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        dirty = bool(payload.get("repository_dirty"))
+        gates.append(
+            GateOutcome(
+                "release built from a clean commit",
+                not dirty,
+                "dirty tree — this release cannot be reproduced from its commit"
+                if dirty
+                else str(payload.get("repository_commit", ""))[:12],
+            )
+        )
     gates.append(
         GateOutcome(
             "checksums exist",
