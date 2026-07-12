@@ -50,3 +50,4 @@ data/**/raw/
 *.swp
 .runlogs/
 .financebench_cache/
+runs_archive/
