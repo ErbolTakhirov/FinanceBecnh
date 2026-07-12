@@ -10,6 +10,2909 @@
     {
       "model_ref": "ollama/qwen2.5:3b",
       "runs": {
+        "convfinqa-structured_financial_v1-context_given-model_history-ollama-qwen2.5-3b-9496e179": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "convfinqa_turn_accuracy": {
+              "metric_name": "convfinqa_turn_accuracy",
+              "n": 120,
+              "n_not_applicable": 0,
+              "mean": 0.2833333333333333,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 120,
+              "n_not_applicable": 0,
+              "mean": 0.025,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "conversation_consistency": {
+                "metric_name": "conversation_consistency",
+                "n": 120,
+                "n_not_applicable": 0,
+                "mean": 0.2833333333333333,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 120,
+                "n_not_applicable": 0,
+                "mean": 0.2833333333333333,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 120,
+                "n_not_applicable": 0,
+                "mean": 0.2833333333333333,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.2833333333333333,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": 0.2833333333333333,
+              "grounding_score": null,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9667
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.2833, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 56,
+              "invalid_structured_response": 10,
+              "unnecessary_refusal": 10,
+              "no_extractable_number": 6,
+              "wrong_sign": 2,
+              "percent_vs_percentage_point": 1,
+              "wrong_scale": 1
+            },
+            "retrieval": null,
+            "conversation": {
+              "protocol": "model_history",
+              "n_conversations": 30,
+              "n_turns": 120,
+              "turn_accuracy": 0.2833333333333333,
+              "full_conversation_accuracy": 0.0,
+              "accuracy_by_turn_index": {
+                "0": 0.4666666666666667,
+                "1": 0.3448275862068966,
+                "2": 0.20833333333333334,
+                "3": 0.23809523809523808,
+                "4": 0.0,
+                "5": 0.0,
+                "6": 0.0
+              },
+              "mean_first_error_turn": 0.8666666666666667,
+              "dependent_turn_accuracy": 0.16666666666666666,
+              "independent_turn_accuracy": 0.34615384615384615,
+              "context_loss": 0.1794871794871795,
+              "accuracy_given_clean_inputs": 0.25,
+              "accuracy_given_poisoned_inputs": 0.09090909090909091,
+              "propagation_effect": 0.1590909090909091,
+              "recovery_rate": 0.09090909090909091,
+              "n_dependent_turns": 42,
+              "n_poisoned_turns": 22
+            }
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.2833,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0333,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0833,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0083,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0833,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "convfinqa"
+            ],
+            "supported_benchmarks": [
+              "convfinqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 120,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "convfinqa-structured_financial_v1-context_given-ollama-qwen2.5-3b-42cef1f9": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "convfinqa_turn_accuracy": {
+              "metric_name": "convfinqa_turn_accuracy",
+              "n": 120,
+              "n_not_applicable": 0,
+              "mean": 0.30833333333333335,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 120,
+              "n_not_applicable": 0,
+              "mean": 0.05,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "conversation_consistency": {
+                "metric_name": "conversation_consistency",
+                "n": 120,
+                "n_not_applicable": 0,
+                "mean": 0.30833333333333335,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 120,
+                "n_not_applicable": 0,
+                "mean": 0.30833333333333335,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 120,
+                "n_not_applicable": 0,
+                "mean": 0.30833333333333335,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.30833333333333335,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": 0.30833333333333335,
+              "grounding_score": null,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9717
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.3083, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 64,
+              "unnecessary_refusal": 6,
+              "no_extractable_number": 5,
+              "invalid_structured_response": 2,
+              "wrong_magnitude": 2,
+              "wrong_scale": 2,
+              "wrong_sign": 2
+            },
+            "retrieval": null,
+            "conversation": {
+              "protocol": "gold_history",
+              "n_conversations": 30,
+              "n_turns": 120,
+              "turn_accuracy": 0.30833333333333335,
+              "full_conversation_accuracy": 0.0,
+              "accuracy_by_turn_index": {
+                "0": 0.4666666666666667,
+                "1": 0.3793103448275862,
+                "2": 0.16666666666666666,
+                "3": 0.38095238095238093,
+                "4": 0.0,
+                "5": 0.0,
+                "6": 0.0
+              },
+              "mean_first_error_turn": 0.8666666666666667,
+              "dependent_turn_accuracy": 0.21428571428571427,
+              "independent_turn_accuracy": 0.358974358974359,
+              "context_loss": 0.1446886446886447,
+              "accuracy_given_clean_inputs": 0.30434782608695654,
+              "accuracy_given_poisoned_inputs": 0.10526315789473684,
+              "propagation_effect": 0.1990846681922197,
+              "recovery_rate": 0.10526315789473684,
+              "n_dependent_turns": 42,
+              "n_poisoned_turns": 19
+            }
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.3083,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.05,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.05,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0167,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0167,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "convfinqa"
+            ],
+            "supported_benchmarks": [
+              "convfinqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 120,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "core_real-structured_financial_v1-context_given-ollama-qwen2.5-3b-b2a54a41": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "INSUFFICIENT_COVERAGE",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 9,
+              "n_not_applicable": 0,
+              "mean": 0.2222222222222222,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 9,
+              "n_not_applicable": 0,
+              "mean": 0.3333333333333333,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 9,
+                "n_not_applicable": 0,
+                "mean": 0.3333333333333333,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 9,
+                "n_not_applicable": 0,
+                "mean": 0.3333333333333333,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 9,
+                "n_not_applicable": 0,
+                "mean": 0.3333333333333333,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.3333333333333333,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.3333333333333333,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9444
+            },
+            "verdict": "INSUFFICIENT_COVERAGE",
+            "verdict_reasons": [
+              "Only 9 samples were scored (minimum 30 for any claim). The score below is real, but it is not enough evidence to characterise a model."
+            ],
+            "failure_distribution": {
+              "wrong_number": 5,
+              "wrong_magnitude": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.25,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.1111,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa"
+            ],
+            "supported_benchmarks": [
+              "finqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 9,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "finance_reasoning-structured_financial_v1-context_given-ollama-qwen2.5-3b-6fdd075c": {
+          "fci": null,
+          "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finance_reasoning_accuracy": {
+              "metric_name": "finance_reasoning_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.0,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": null,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+              "reliability_penalty": 0.95
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0, below the limit of 0.5.",
+              "FAILED GATE invalid_output_rate_max: observed 0.125, above the limit of 0.1."
+            ],
+            "failure_distribution": {
+              "wrong_number": 29,
+              "invalid_structured_response": 5,
+              "unnecessary_refusal": 3,
+              "no_extractable_number": 1,
+              "wrong_magnitude": 1,
+              "wrong_sign": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.05,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.075,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.125,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finance_reasoning"
+            ],
+            "supported_benchmarks": [
+              "finance_reasoning"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 40,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "financebench-structured_financial_v1-context_given-ollama-qwen2.5-3b-56183cfb": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.02,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_answer_accuracy": {
+              "metric_name": "financebench_answer_accuracy",
+              "n": 89,
+              "n_not_applicable": 61,
+              "mean": 0.23595505617977527,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_citation_accuracy": {
+              "metric_name": "financebench_citation_accuracy",
+              "n": 1,
+              "n_not_applicable": 149,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_unsupported_numeric_claim": {
+              "metric_name": "financebench_unsupported_numeric_claim",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.7066666666666667,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 89,
+                "n_not_applicable": 0,
+                "mean": 0.24480249480249483,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 52,
+                "n_not_applicable": 0,
+                "mean": 0.19230769230769232,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "analytical_insight": {
+                "metric_name": "analytical_insight",
+                "n": 37,
+                "n_not_applicable": 0,
+                "mean": 0.2972972972972973,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.24480249480249483,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.24480249480249483,
+              "analysis_score": 0.2972972972972973,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.988
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.1923, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 35,
+              "unnecessary_refusal": 27,
+              "invalid_structured_response": 4,
+              "wrong_magnitude": 1,
+              "wrong_scale": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.1923,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0133,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.18,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0067,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0267,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "financebench"
+            ],
+            "supported_benchmarks": [
+              "financebench"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 150,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "financebench-structured_financial_v1-retrieval_required-bm25-k10-scoped-ollama-qwen2.5-3b-411f70f5": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_answer_accuracy": {
+              "metric_name": "financebench_answer_accuracy",
+              "n": 89,
+              "n_not_applicable": 61,
+              "mean": 0.02247191011235955,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_citation_accuracy": {
+              "metric_name": "financebench_citation_accuracy",
+              "n": 0,
+              "n_not_applicable": 150,
+              "mean": null,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_unsupported_numeric_claim": {
+              "metric_name": "financebench_unsupported_numeric_claim",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.6866666666666666,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 89,
+                "n_not_applicable": 0,
+                "mean": 0.02702702702702703,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 52,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "analytical_insight": {
+                "metric_name": "analytical_insight",
+                "n": 37,
+                "n_not_applicable": 0,
+                "mean": 0.05405405405405406,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "retrieval_required",
+              "financial_core_score": null,
+              "financial_rag_score": 0.02702702702702703,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.02702702702702703,
+              "analysis_score": 0.05405405405405406,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "retrieval_miss": 78,
+              "generation_error_after_retrieval": 7,
+              "unnecessary_refusal": 2
+            },
+            "retrieval": {
+              "retriever": "bm25",
+              "top_k": 10,
+              "document_scoped": true,
+              "corpus_pages": 12013,
+              "corpus_documents": 84,
+              "index_fingerprint": "75271c35298bac37",
+              "document_recall": 1.0,
+              "page_recall": 0.18666666666666668,
+              "evidence_precision": 0.021351851851851854,
+              "evidence_recall": 0.16666666666666666,
+              "evidence_f1": 0.03721885521885522,
+              "n_scored": 150
+            },
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0133,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "financebench"
+            ],
+            "supported_benchmarks": [
+              "financebench"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 150,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "financebench-structured_financial_v1-retrieval_required-hybrid-k20-scoped-ollama-qwen2.5-3b-1c22b701": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.006666666666666667,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_answer_accuracy": {
+              "metric_name": "financebench_answer_accuracy",
+              "n": 89,
+              "n_not_applicable": 61,
+              "mean": 0.02247191011235955,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_citation_accuracy": {
+              "metric_name": "financebench_citation_accuracy",
+              "n": 0,
+              "n_not_applicable": 150,
+              "mean": null,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_unsupported_numeric_claim": {
+              "metric_name": "financebench_unsupported_numeric_claim",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.6733333333333333,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 89,
+                "n_not_applicable": 0,
+                "mean": 0.02312889812889813,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 52,
+                "n_not_applicable": 0,
+                "mean": 0.019230769230769232,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "analytical_insight": {
+                "metric_name": "analytical_insight",
+                "n": 37,
+                "n_not_applicable": 0,
+                "mean": 0.02702702702702703,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "retrieval_required",
+              "financial_core_score": null,
+              "financial_rag_score": 0.023128898128898134,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.02312889812889813,
+              "analysis_score": 0.02702702702702703,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0192, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "retrieval_miss": 59,
+              "generation_error_after_retrieval": 22,
+              "unnecessary_refusal": 6
+            },
+            "retrieval": {
+              "retriever": "hybrid",
+              "top_k": 20,
+              "document_scoped": true,
+              "corpus_pages": 12013,
+              "corpus_documents": 84,
+              "index_fingerprint": "75271c35298bac37",
+              "document_recall": 1.0,
+              "page_recall": 0.38666666666666666,
+              "evidence_precision": 0.024767195767195768,
+              "evidence_recall": 0.33555555555555555,
+              "evidence_f1": 0.045315725763296094,
+              "n_scored": 150
+            },
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0192,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.04,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "financebench"
+            ],
+            "supported_benchmarks": [
+              "financebench"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 150,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "finqa-program_v1-context_given-ollama-qwen2.5-3b-0b50533c": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "INSUFFICIENT_COVERAGE",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 12,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_execution_accuracy": {
+              "metric_name": "finqa_execution_accuracy",
+              "n": 12,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_program_accuracy": {
+              "metric_name": "finqa_program_accuracy",
+              "n": 12,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 12,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 12,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 12,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.0,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.0,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "INSUFFICIENT_COVERAGE",
+            "verdict_reasons": [
+              "Only 12 samples were scored (minimum 30 for any claim). The score below is real, but it is not enough evidence to characterise a model."
+            ],
+            "failure_distribution": {
+              "no_extractable_number": 11,
+              "wrong_number": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa"
+            ],
+            "supported_benchmarks": [
+              "finqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 12,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "finqa-structured_financial_v1-context_given-ollama-qwen2.5-3b-62bc0ec0": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.125,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.15,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.15,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.15,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.15,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.15,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.15,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.945
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.1316, below the limit of 0.5.",
+              "FAILED GATE catastrophic_numeric_error_rate_max: observed 0.1, above the limit of 0.05."
+            ],
+            "failure_distribution": {
+              "wrong_number": 22,
+              "unnecessary_refusal": 7,
+              "wrong_magnitude": 3,
+              "invalid_structured_response": 1,
+              "percent_vs_percentage_point": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.1316,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.1,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.175,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.025,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa"
+            ],
+            "supported_benchmarks": [
+              "finqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 40,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "release_v0_1-structured_financial_v1-context_given-ollama-qwen2.5-3b-ca23b163": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 220,
+              "n_not_applicable": 0,
+              "mean": 0.07727272727272727,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.15,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.2,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.31074999999999997,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.725,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finance_reasoning_accuracy": {
+              "metric_name": "finance_reasoning_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_answer_accuracy": {
+              "metric_name": "financebench_answer_accuracy",
+              "n": 26,
+              "n_not_applicable": 14,
+              "mean": 0.23076923076923078,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_citation_accuracy": {
+              "metric_name": "financebench_citation_accuracy",
+              "n": 1,
+              "n_not_applicable": 39,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_unsupported_numeric_claim": {
+              "metric_name": "financebench_unsupported_numeric_claim",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.625,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_accuracy": {
+              "metric_name": "smb_cfo_accuracy",
+              "n": 37,
+              "n_not_applicable": 3,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_injection_resistance": {
+              "metric_name": "smb_cfo_injection_resistance",
+              "n": 2,
+              "n_not_applicable": 38,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_refusal_correctness": {
+              "metric_name": "smb_cfo_refusal_correctness",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.95,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "convfinqa_turn_accuracy": {
+              "metric_name": "convfinqa_turn_accuracy",
+              "n": 20,
+              "n_not_applicable": 0,
+              "mean": 0.3,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 86,
+                "n_not_applicable": 0,
+                "mean": 0.17692307692307693,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 167,
+                "n_not_applicable": 0,
+                "mean": 0.15512820512820513,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 141,
+                "n_not_applicable": 0,
+                "mean": 0.13,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "analytical_insight": {
+                "metric_name": "analytical_insight",
+                "n": 32,
+                "n_not_applicable": 0,
+                "mean": 0.11538461538461539,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "financial_formula_reasoning": {
+                "metric_name": "financial_formula_reasoning",
+                "n": 8,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "calibration_and_refusal": {
+                "metric_name": "calibration_and_refusal",
+                "n": 5,
+                "n_not_applicable": 0,
+                "mean": 1.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "conversation_consistency": {
+                "metric_name": "conversation_consistency",
+                "n": 20,
+                "n_not_applicable": 0,
+                "mean": 0.3,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.2682051282051282,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": 0.0,
+              "conversation_score": 0.3,
+              "grounding_score": 0.17692307692307693,
+              "analysis_score": 0.11538461538461539,
+              "refusal_score": 1.0,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9473
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.1159, below the limit of 0.5.",
+              "FAILED GATE invalid_output_rate_max: observed 0.1727, above the limit of 0.1."
+            ],
+            "failure_distribution": {
+              "wrong_number": 105,
+              "invalid_structured_response": 38,
+              "unnecessary_refusal": 22,
+              "wrong_magnitude": 6,
+              "no_extractable_number": 4,
+              "percent_vs_percentage_point": 1,
+              "wrong_sign": 1
+            },
+            "retrieval": null,
+            "conversation": {
+              "protocol": "gold_history",
+              "n_conversations": 5,
+              "n_turns": 20,
+              "turn_accuracy": 0.3,
+              "full_conversation_accuracy": 0.0,
+              "accuracy_by_turn_index": {
+                "0": 0.4,
+                "1": 0.4,
+                "2": 0.0,
+                "3": 0.5,
+                "4": 0.0
+              },
+              "mean_first_error_turn": 0.8,
+              "dependent_turn_accuracy": 0.2857142857142857,
+              "independent_turn_accuracy": 0.3076923076923077,
+              "context_loss": 0.02197802197802201,
+              "accuracy_given_clean_inputs": 0.3333333333333333,
+              "accuracy_given_poisoned_inputs": 0.0,
+              "propagation_effect": 0.3333333333333333,
+              "recovery_rate": 0.0,
+              "n_dependent_turns": 7,
+              "n_poisoned_turns": 1
+            }
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.1159,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0364,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.1,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.1727,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "convfinqa",
+              "finance_reasoning",
+              "financebench",
+              "finqa",
+              "smb_cfo",
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "convfinqa",
+              "finance_reasoning",
+              "financebench",
+              "finqa",
+              "smb_cfo",
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 220,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "secque-structured_financial_v1-context_given-ollama-qwen2.5-3b-273a5ad4": {
+          "fci": null,
+          "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 80,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_comparison_direction": {
+              "metric_name": "secque_comparison_direction",
+              "n": 19,
+              "n_not_applicable": 61,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_filing_identification": {
+              "metric_name": "secque_filing_identification",
+              "n": 56,
+              "n_not_applicable": 24,
+              "mean": 0.6071428571428571,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_numeric_agreement": {
+              "metric_name": "secque_numeric_agreement",
+              "n": 62,
+              "n_not_applicable": 18,
+              "mean": 0.07996089931573802,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_unsupported_numeric_claim": {
+              "metric_name": "secque_unsupported_numeric_claim",
+              "n": 80,
+              "n_not_applicable": 0,
+              "mean": 0.9375,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 56,
+                "n_not_applicable": 0,
+                "mean": 0.640625,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 62,
+                "n_not_applicable": 0,
+                "mean": 0.06797905525846702,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.3543020276292335,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.640625,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 5
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "secque"
+            ],
+            "supported_benchmarks": [
+              "secque"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 80,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "smb_cfo-structured_financial_v1-context_given-ollama-qwen2.5-3b-ddda1ed3": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 30,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_accuracy": {
+              "metric_name": "smb_cfo_accuracy",
+              "n": 20,
+              "n_not_applicable": 10,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_injection_resistance": {
+              "metric_name": "smb_cfo_injection_resistance",
+              "n": 10,
+              "n_not_applicable": 20,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_refusal_correctness": {
+              "metric_name": "smb_cfo_refusal_correctness",
+              "n": 30,
+              "n_not_applicable": 0,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 20,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "calibration_and_refusal": {
+                "metric_name": "calibration_and_refusal",
+                "n": 20,
+                "n_not_applicable": 0,
+                "mean": 1.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "analytical_insight": {
+                "metric_name": "analytical_insight",
+                "n": 3,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 3,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.25,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": 0.0,
+              "conversation_score": null,
+              "grounding_score": null,
+              "analysis_score": 0.0,
+              "refusal_score": 1.0,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.8667
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0, below the limit of 0.5.",
+              "FAILED GATE invalid_output_rate_max: observed 0.6667, above the limit of 0.1."
+            ],
+            "failure_distribution": {
+              "invalid_structured_response": 20
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.6667,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "smb_cfo"
+            ],
+            "supported_benchmarks": [
+              "smb_cfo"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 30,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "tatqa-structured_financial_v1-context_given-ollama-qwen2.5-3b-3dd38d48": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.15,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.125,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.23224999999999998,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.675,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 24,
+                "n_not_applicable": 0,
+                "mean": 0.1875,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.14583333333333334,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 16,
+                "n_not_applicable": 0,
+                "mean": 0.0625,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.13194444444444445,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.1875,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0625, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 32,
+              "unnecessary_refusal": 3
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0625,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.075,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 40,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "tatqa-structured_financial_v1-tool_assisted-ollama-qwen2.5-3b-ecf8911d": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "INSUFFICIENT_COVERAGE",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 0.5,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 0.11666666666666665,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 0.16666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_argument_validity": {
+              "metric_name": "tool_argument_validity",
+              "n": 1,
+              "n_not_applicable": 5,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_error_recovery": {
+              "metric_name": "tool_error_recovery",
+              "n": 1,
+              "n_not_applicable": 5,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_execution_success": {
+              "metric_name": "tool_execution_success",
+              "n": 1,
+              "n_not_applicable": 5,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_hallucination_rate": {
+              "metric_name": "tool_hallucination_rate",
+              "n": 1,
+              "n_not_applicable": 5,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_invocation_rate": {
+              "metric_name": "tool_invocation_rate",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 0.16666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_result_utilization": {
+              "metric_name": "tool_result_utilization",
+              "n": 0,
+              "n_not_applicable": 6,
+              "mean": null,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_security_rejection": {
+              "metric_name": "tool_security_rejection",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_selection_accuracy": {
+              "metric_name": "tool_selection_accuracy",
+              "n": 6,
+              "n_not_applicable": 0,
+              "mean": 0.16666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 3,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 6,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 3,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "tool_assisted",
+              "financial_core_score": null,
+              "financial_rag_score": null,
+              "financial_agent_score": 0.0,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.0,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "INSUFFICIENT_COVERAGE",
+            "verdict_reasons": [
+              "Only 6 samples were scored (minimum 30 for any claim). The score below is real, but it is not enough evidence to characterise a model."
+            ],
+            "failure_distribution": {
+              "wrong_number": 5,
+              "unnecessary_refusal": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.1667,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": 1.0,
+                "passed": true,
+                "skipped": false
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 6,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
         "tool_paired_v1-structured_financial_v1-context_given-ollama-qwen2.5-3b-c3de9553": {
           "fci": null,
           "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
@@ -194,6 +3097,1823 @@
                 "observed": null,
                 "passed": null,
                 "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa",
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "finqa",
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 150,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "tool_paired_v1-structured_financial_v1-tool_assisted-ollama-qwen2.5-3b-29fa8863": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.06,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.02666666666666667,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_argument_validity": {
+              "metric_name": "tool_argument_validity",
+              "n": 2,
+              "n_not_applicable": 148,
+              "mean": 0.5,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_error_recovery": {
+              "metric_name": "tool_error_recovery",
+              "n": 1,
+              "n_not_applicable": 149,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_execution_success": {
+              "metric_name": "tool_execution_success",
+              "n": 2,
+              "n_not_applicable": 148,
+              "mean": 0.5,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_hallucination_rate": {
+              "metric_name": "tool_hallucination_rate",
+              "n": 2,
+              "n_not_applicable": 148,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_invocation_rate": {
+              "metric_name": "tool_invocation_rate",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.013333333333333334,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_result_utilization": {
+              "metric_name": "tool_result_utilization",
+              "n": 1,
+              "n_not_applicable": 149,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_security_rejection": {
+              "metric_name": "tool_security_rejection",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_selection_accuracy": {
+              "metric_name": "tool_selection_accuracy",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.013333333333333334,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.06666666666666667,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.15039999999999998,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.6666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 112,
+                "n_not_applicable": 0,
+                "mean": 0.027222222222222224,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 113,
+                "n_not_applicable": 0,
+                "mean": 0.06596491228070175,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 150,
+                "n_not_applicable": 0,
+                "mean": 0.04659356725146199,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "tool_assisted",
+              "financial_core_score": null,
+              "financial_rag_score": null,
+              "financial_agent_score": 0.04659356725146199,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.027222222222222224,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0545, below the limit of 0.5.",
+              "FAILED GATE unnecessary_refusal_rate_max: observed 0.7267, above the limit of 0.25."
+            ],
+            "failure_distribution": {
+              "unnecessary_refusal": 109,
+              "wrong_number": 32,
+              "no_extractable_number": 2
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0545,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.7267,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": 1.0,
+                "passed": true,
+                "skipped": false
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa",
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "finqa",
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 150,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        }
+      }
+    },
+    {
+      "model_ref": "ollama/qwen2.5:7b",
+      "runs": {
+        "finance_reasoning-structured_financial_v1-context_given-ollama-qwen2.5-7b-8227b883": {
+          "fci": null,
+          "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finance_reasoning_accuracy": {
+              "metric_name": "finance_reasoning_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.025,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.025,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.025,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.025,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": null,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.025, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 37,
+              "no_extractable_number": 1,
+              "unnecessary_refusal": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.025,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.025,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finance_reasoning"
+            ],
+            "supported_benchmarks": [
+              "finance_reasoning"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 40,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "finqa-structured_financial_v1-context_given-ollama-qwen2.5-7b-fb168ffc": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.175,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.35,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.35,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.35,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.35,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.3499999999999999,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.35,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.975
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.3421, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 17,
+              "unnecessary_refusal": 6,
+              "percent_vs_percentage_point": 2,
+              "no_extractable_number": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.3421,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.05,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.15,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa"
+            ],
+            "supported_benchmarks": [
+              "finqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 40,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "release_v0_1-structured_financial_v1-context_given-ollama-qwen2.5-7b-8b4bdf35": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 220,
+              "n_not_applicable": 0,
+              "mean": 0.08636363636363636,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.35,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.225,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.32375,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.7,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finance_reasoning_accuracy": {
+              "metric_name": "finance_reasoning_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.025,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_answer_accuracy": {
+              "metric_name": "financebench_answer_accuracy",
+              "n": 26,
+              "n_not_applicable": 14,
+              "mean": 0.4230769230769231,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_citation_accuracy": {
+              "metric_name": "financebench_citation_accuracy",
+              "n": 39,
+              "n_not_applicable": 1,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "financebench_unsupported_numeric_claim": {
+              "metric_name": "financebench_unsupported_numeric_claim",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.725,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_accuracy": {
+              "metric_name": "smb_cfo_accuracy",
+              "n": 37,
+              "n_not_applicable": 3,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_injection_resistance": {
+              "metric_name": "smb_cfo_injection_resistance",
+              "n": 2,
+              "n_not_applicable": 38,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "smb_cfo_refusal_correctness": {
+              "metric_name": "smb_cfo_refusal_correctness",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.95,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "convfinqa_turn_accuracy": {
+              "metric_name": "convfinqa_turn_accuracy",
+              "n": 20,
+              "n_not_applicable": 0,
+              "mean": 0.35,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 86,
+                "n_not_applicable": 0,
+                "mean": 0.341025641025641,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 167,
+                "n_not_applicable": 0,
+                "mean": 0.23108974358974357,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 141,
+                "n_not_applicable": 0,
+                "mean": 0.19,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "analytical_insight": {
+                "metric_name": "analytical_insight",
+                "n": 32,
+                "n_not_applicable": 0,
+                "mean": 0.19230769230769232,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "financial_formula_reasoning": {
+                "metric_name": "financial_formula_reasoning",
+                "n": 8,
+                "n_not_applicable": 0,
+                "mean": 0.0,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "calibration_and_refusal": {
+                "metric_name": "calibration_and_refusal",
+                "n": 5,
+                "n_not_applicable": 0,
+                "mean": 0.5,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "conversation_consistency": {
+                "metric_name": "conversation_consistency",
+                "n": 20,
+                "n_not_applicable": 0,
+                "mean": 0.35,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.2577747252747253,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": 0.0,
+              "conversation_score": 0.35,
+              "grounding_score": 0.341025641025641,
+              "analysis_score": 0.19230769230769232,
+              "refusal_score": 0.5,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9541
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.189, below the limit of 0.5.",
+              "FAILED GATE invalid_output_rate_max: observed 0.15, above the limit of 0.1."
+            ],
+            "failure_distribution": {
+              "wrong_number": 105,
+              "invalid_structured_response": 33,
+              "unnecessary_refusal": 13,
+              "no_extractable_number": 3,
+              "percent_vs_percentage_point": 3,
+              "wrong_magnitude": 2,
+              "wrong_scale": 1,
+              "wrong_sign": 1
+            },
+            "retrieval": null,
+            "conversation": {
+              "protocol": "gold_history",
+              "n_conversations": 5,
+              "n_turns": 20,
+              "turn_accuracy": 0.35,
+              "full_conversation_accuracy": 0.0,
+              "accuracy_by_turn_index": {
+                "0": 0.4,
+                "1": 0.4,
+                "2": 0.25,
+                "3": 0.5,
+                "4": 0.0
+              },
+              "mean_first_error_turn": 1.2,
+              "dependent_turn_accuracy": 0.42857142857142855,
+              "independent_turn_accuracy": 0.3076923076923077,
+              "context_loss": -0.12087912087912084,
+              "accuracy_given_clean_inputs": 0.5,
+              "accuracy_given_poisoned_inputs": 0.0,
+              "propagation_effect": 0.5,
+              "recovery_rate": 0.0,
+              "n_dependent_turns": 7,
+              "n_poisoned_turns": 1
+            }
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.189,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0318,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0591,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0045,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.15,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "convfinqa",
+              "finance_reasoning",
+              "financebench",
+              "finqa",
+              "smb_cfo",
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "convfinqa",
+              "finance_reasoning",
+              "financebench",
+              "finqa",
+              "smb_cfo",
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 220,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "secque-structured_financial_v1-context_given-ollama-qwen2.5-7b-78a363b8": {
+          "fci": null,
+          "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 80,
+              "n_not_applicable": 0,
+              "mean": 0.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_comparison_direction": {
+              "metric_name": "secque_comparison_direction",
+              "n": 12,
+              "n_not_applicable": 68,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_filing_identification": {
+              "metric_name": "secque_filing_identification",
+              "n": 62,
+              "n_not_applicable": 18,
+              "mean": 0.45161290322580644,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_numeric_agreement": {
+              "metric_name": "secque_numeric_agreement",
+              "n": 62,
+              "n_not_applicable": 18,
+              "mean": 0.11470546478610995,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "secque_unsupported_numeric_claim": {
+              "metric_name": "secque_unsupported_numeric_claim",
+              "n": 80,
+              "n_not_applicable": 0,
+              "mean": 0.9,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 62,
+                "n_not_applicable": 0,
+                "mean": 0.4936299081035923,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 62,
+                "n_not_applicable": 0,
+                "mean": 0.12111800780918427,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.3073739579563883,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.4936299081035923,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "only 2 capability dimension(s) had coverage (minimum 3); an index built from one dimension is not an index",
+              "reliability_penalty": 1.0
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.0, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 8
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.0,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "secque"
+            ],
+            "supported_benchmarks": [
+              "secque"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 80,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "tatqa-structured_financial_v1-context_given-ollama-qwen2.5-7b-16c8eb64": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.125,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.275,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.371,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 40,
+              "n_not_applicable": 0,
+              "mean": 0.725,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 24,
+                "n_not_applicable": 0,
+                "mean": 0.34375,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 40,
+                "n_not_applicable": 0,
+                "mean": 0.2708333333333333,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 16,
+                "n_not_applicable": 0,
+                "mean": 0.125,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.24652777777777776,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.34375,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9875
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.125, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 25,
+              "unnecessary_refusal": 2,
+              "no_extractable_number": 1,
+              "percent_vs_percentage_point": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.125,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.025,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.05,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 40,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "tool_paired_v1-structured_financial_v1-context_given-ollama-qwen2.5-7b-6a22c0f5": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.16666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.26666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.26666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.3506666666666667,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.72,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 112,
+                "n_not_applicable": 0,
+                "mean": 0.2839181286549708,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 113,
+                "n_not_applicable": 0,
+                "mean": 0.2517543859649123,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 150,
+                "n_not_applicable": 0,
+                "mean": 0.26783625730994154,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "context_given",
+              "financial_core_score": 0.26783625730994154,
+              "financial_rag_score": null,
+              "financial_agent_score": null,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.2839181286549708,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.96
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.2455, below the limit of 0.5.",
+              "FAILED GATE catastrophic_numeric_error_rate_max: observed 0.08, above the limit of 0.05."
+            ],
+            "failure_distribution": {
+              "wrong_number": 79,
+              "unnecessary_refusal": 13,
+              "no_extractable_number": 6,
+              "percent_vs_percentage_point": 5,
+              "wrong_magnitude": 5,
+              "basis_point_confusion": 1,
+              "wrong_scale": 1
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.2455,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.08,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.0867,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0067,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              }
+            ],
+            "any_critical_gate_failed": true
+          },
+          "coverage": {
+            "requested_benchmarks": [
+              "finqa",
+              "tatqa"
+            ],
+            "supported_benchmarks": [
+              "finqa",
+              "tatqa"
+            ],
+            "unavailable_benchmarks": [],
+            "evaluated_samples": 150,
+            "skipped_samples": 0,
+            "text_only_coverage": 1.0,
+            "multimodal_coverage": 0.0,
+            "ru_coverage": 0.0,
+            "agentic_coverage": 0.0
+          }
+        },
+        "tool_paired_v1-structured_financial_v1-tool_assisted-ollama-qwen2.5-7b-c45d530c": {
+          "fci": null,
+          "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+          "verdict": "NOT_FINANCE_READY",
+          "metrics": {
+            "exact_match": {
+              "metric_name": "exact_match",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.2,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "finqa_answer_accuracy": {
+              "metric_name": "finqa_answer_accuracy",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.24,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_argument_validity": {
+              "metric_name": "tool_argument_validity",
+              "n": 29,
+              "n_not_applicable": 121,
+              "mean": 0.9310344827586207,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_error_recovery": {
+              "metric_name": "tool_error_recovery",
+              "n": 16,
+              "n_not_applicable": 134,
+              "mean": 0.1875,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_execution_success": {
+              "metric_name": "tool_execution_success",
+              "n": 29,
+              "n_not_applicable": 121,
+              "mean": 0.5517241379310345,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_hallucination_rate": {
+              "metric_name": "tool_hallucination_rate",
+              "n": 29,
+              "n_not_applicable": 121,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_invocation_rate": {
+              "metric_name": "tool_invocation_rate",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.19333333333333333,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_result_utilization": {
+              "metric_name": "tool_result_utilization",
+              "n": 16,
+              "n_not_applicable": 134,
+              "mean": 0.6875,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_security_rejection": {
+              "metric_name": "tool_security_rejection",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 1.0,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tool_selection_accuracy": {
+              "metric_name": "tool_selection_accuracy",
+              "n": 150,
+              "n_not_applicable": 0,
+              "mean": 0.19333333333333333,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_exact_match": {
+              "metric_name": "tatqa_exact_match",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.26666666666666666,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_f1": {
+              "metric_name": "tatqa_f1",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.3677333333333333,
+              "ci_low": null,
+              "ci_high": null
+            },
+            "tatqa_scale_accuracy": {
+              "metric_name": "tatqa_scale_accuracy",
+              "n": 75,
+              "n_not_applicable": 0,
+              "mean": 0.76,
+              "ci_low": null,
+              "ci_high": null
+            }
+          },
+          "capabilities": {
+            "dimensions": {
+              "document_grounding": {
+                "metric_name": "document_grounding",
+                "n": 112,
+                "n_not_applicable": 0,
+                "mean": 0.21649122807017543,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "numerical_accuracy": {
+                "metric_name": "numerical_accuracy",
+                "n": 113,
+                "n_not_applicable": 0,
+                "mean": 0.29105263157894734,
+                "ci_low": null,
+                "ci_high": null
+              },
+              "table_text_reasoning": {
+                "metric_name": "table_text_reasoning",
+                "n": 150,
+                "n_not_applicable": 0,
+                "mean": 0.2537719298245614,
+                "ci_low": null,
+                "ci_high": null
+              }
+            },
+            "scores": {
+              "eval_mode": "tool_assisted",
+              "financial_core_score": null,
+              "financial_rag_score": null,
+              "financial_agent_score": 0.25377192982456137,
+              "multimodal_finance_score": null,
+              "smb_cfo_score": null,
+              "conversation_score": null,
+              "grounding_score": 0.21649122807017543,
+              "analysis_score": null,
+              "refusal_score": null,
+              "bilingual_score": null,
+              "finance_capability_index": null,
+              "fci_withheld_because": "a critical gate failed \u2014 a single index would let a strong average hide the kind of error that is not a near-miss in finance",
+              "reliability_penalty": 0.9867
+            },
+            "verdict": "NOT_FINANCE_READY",
+            "verdict_reasons": [
+              "A critical gate failed. However good the average is, this model makes the kind of error that is not a near-miss in a financial context.",
+              "FAILED GATE numeric_accuracy_min: observed 0.2818, below the limit of 0.5."
+            ],
+            "failure_distribution": {
+              "wrong_number": 84,
+              "unnecessary_refusal": 17,
+              "no_extractable_number": 7,
+              "wrong_magnitude": 4
+            },
+            "retrieval": null,
+            "conversation": null
+          },
+          "gates": {
+            "evaluated": true,
+            "gates": [
+              {
+                "gate_name": "numeric_accuracy_min",
+                "threshold": 0.5,
+                "observed": 0.2818,
+                "passed": false,
+                "skipped": false
+              },
+              {
+                "gate_name": "catastrophic_numeric_error_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0267,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "failed_refusal_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unnecessary_refusal_rate_max",
+                "threshold": 0.25,
+                "observed": 0.1133,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "prompt_injection_obeyed_rate_max",
+                "threshold": 0.0,
+                "observed": null,
+                "passed": null,
+                "skipped": true
+              },
+              {
+                "gate_name": "wrong_scale_rate_max",
+                "threshold": 0.03,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_currency_rate_max",
+                "threshold": 0.02,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "wrong_period_rate_max",
+                "threshold": 0.05,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "unsupported_claim_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "invalid_output_rate_max",
+                "threshold": 0.1,
+                "observed": 0.0,
+                "passed": true,
+                "skipped": false
+              },
+              {
+                "gate_name": "tool_security_rejection_min",
+                "threshold": 1.0,
+                "observed": 1.0,
+                "passed": true,
+                "skipped": false
               }
             ],
             "any_critical_gate_failed": true

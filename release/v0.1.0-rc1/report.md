@@ -194,40 +194,77 @@ passes perfectly. Fixed; see `manual_validity_review.md`.
 
 ---
 
-## Retrieval: the bottleneck is the model, not the retriever
+## Retrieval: doubling page recall changed *nothing*, and broke the output contract
 
-The full 6-arm ablation over a real **12,013-page, 84-filing** corpus (no model in the loop):
+The full ablation over a real **12,013-page, 84-filing** corpus, and then — the expensive part — the
+same **150 sample ids** generated against, twice.
 
-| retriever | scope | page recall @20 | doc recall @20 |
-|---|---|---|---|
-| bm25 | open-corpus | 7.3% | 79.3% |
-| bm25 | doc-scoped | 27.3% | 100% |
-| dense | open-corpus | 2.0% | **27.3%** |
-| dense | doc-scoped | 34.0% | 100% |
-| hybrid | open-corpus | 4.7% | 67.3% |
-| **hybrid** | **doc-scoped** | **38.7%** | 100% |
+### 1. Retrieval performance (no model in the loop)
 
-Dense retrieval is **dramatically worse at finding the company** (27.3% document recall vs BM25's
-79.3%) — the questions name a company and a year, which is a lexical match, and the embedding blurs
+| retriever | scope | page recall @20 | doc recall @20 | query latency |
+|---|---|---|---|---|
+| bm25 | open-corpus | 7.3% | 79.3% | 59 ms |
+| bm25 | doc-scoped | 27.3% | 100% | **1 ms** |
+| dense | open-corpus | 2.0% | **27.3%** | — |
+| dense | doc-scoped | 34.0% | 100% | — |
+| hybrid | open-corpus | 4.7% | 67.3% | — |
+| **hybrid** | **doc-scoped** | **38.7%** | 100% | — |
+
+Two things fall out that no single number would have shown:
+
+**Dense retrieval is dramatically worse at finding the company** — 27.3% document recall against BM25's
+79.3%. The questions name a company and a year, which is a *lexical* match, and the embedding blurs
 exactly that. It is better at finding the *page* once the company is known. Hybrid gets both.
 
-**But retrieval quality is not what is limiting the answers.** Fixing document scoping raised page
-recall from 4.0% → 18.7% (**4.7×**) and produced **no statistically supported improvement in answer
-accuracy** (4 → 2 correct of 89; the 95% CI contains the old value). Meanwhile
-`generation_error_after_retrieval` rose from 2 → 7.
+**Document scoping is strictly dominant:** 4.7× better recall *and* **59× faster** (59 ms → 1 ms). There
+is no trade-off to weigh. And **recall@1 is 2.7%** — the first page retrieved is almost never the right
+one, which is the number that matters most for a model with a short context.
 
-Reading those 7 failures by hand (`manual_validity_review.md`): **all of them are JSON-envelope
-failures.** The retriever found the page, the model computed something, and then answered in its own
-shape — `{"financial_metric": "Retention Ratio", "value": 0.31}` instead of the requested envelope. The
-fix is a parser or a prompt. It is not an index.
+### 2. Does better retrieval produce better answers? **No.**
 
-| stage | value |
-|---|---|
-| retrieval succeeded (page recall @10, bm25 doc-scoped) | 18.7% |
-| end-to-end answer accuracy | 2.25% |
-| **oracle** (context handed to the model) | **23.6%** |
+Two generated arms, identical 150 sample ids, identical evaluator, plus the oracle:
 
-The gap between 23.6% and 2.25% is the retriever. The gap between 23.6% and 100% is the model.
+| arm | page recall | **answer accuracy** | retrieval misses | gen-fail-after-retrieval |
+|---|---|---|---|---|
+| bm25 / doc-scoped / k=10 | 18.7% | **0.0225** (n=89) | 78 | **7** |
+| **hybrid / doc-scoped / k=20** | **38.7%** | **0.0225** (n=89) | 59 | **22** |
+| **oracle** (gold evidence handed over) | 100% | **0.2360** (n=89) | — | — |
+
+**Paired bootstrap, bm25 vs hybrid: difference `+0.000`, 95% CI `[-0.034, +0.034]` — includes zero.**
+
+Retrieval improved by **2.07×**. Answer accuracy did not move by a single question. And
+`generation_error_after_retrieval` **tripled: 7 → 22.**
+
+### 3. Why: the model drowns in its own evidence
+
+All 22 of those failures are the **same failure**, and it is not a reasoning failure. The model returns
+valid JSON *in a shape nobody asked for*:
+
+```json
+{"FOO": "To calculate the FY2017-FY2019 3 year average of capex..."}
+{"source": {"$pillar$: financials, $section$: cash-flow-statement...}}
+{"ERROR": "Template must contain a 'class' field."}
+{"error_message": "Year-end AR value not found in provided data"}
+```
+
+The k=20 prompt is **83,313 characters** — roughly 20k tokens, **two-thirds of qwen2.5:3b's context
+window**. Handed twice as much evidence, the model finds the right page more often and then **abandons
+the output contract entirely.**
+
+### The three points, read together
+
+- Retrieval 18.7% → 38.7% : answer accuracy **2.25% → 2.25%**. Retrieval is *not* the binding
+  constraint.
+- Retrieval 38.7% → 100% (oracle) : answer accuracy **2.25% → 23.60%**. A **10× jump.**
+
+So the model *can* use this evidence — it does so ten times better when handed the gold pages. What it
+cannot do is find the answer inside 83k characters of retrieved context *and* keep to the requested
+format. **The bottleneck is not the retriever, and it is not the model's reasoning. It is the amount of
+context we are pouring into a 3B model, and the output contract that collapses under it.**
+
+That is a finding a single "RAG accuracy" number would have hidden completely — and it would have sent
+you to buy a better embedding model, which the evidence here says would not have moved the answer by
+one question.
 
 ---
 

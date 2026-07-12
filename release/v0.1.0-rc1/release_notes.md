@@ -30,10 +30,22 @@ it ignored the tools, and cost **27% more tokens** doing it.
 The sandbox was never breached: `tool_security_rejection = 1.000`, and that gate is *critical* with a
 threshold of **1.0** — one escape is not a low score, it is a failed release.
 
-### 2. Retrieval is not the bottleneck. The model is.
+**Doubling retrieval recall changed nothing, and broke the output contract.** Two generated arms on
+identical sample ids: bm25/doc-scoped/k=10 (18.7% page recall) and hybrid/doc-scoped/k=20 (**38.7%**).
+Answer accuracy: **0.0225 → 0.0225.** Paired bootstrap difference `+0.000`, 95% CI `[-0.034, +0.034]`.
+Retrieval improved 2.07×; not one more question was answered.
 
-Fixing document scoping raised page recall **4.0% → 18.7%** (4.7×) and produced **no statistically
-supported improvement in answer accuracy**, while `generation_error_after_retrieval` rose 2 → 7.
+And `generation_error_after_retrieval` **tripled: 7 → 22.** All 22 are the same failure — the model
+returns valid JSON in a shape nobody asked for (`{"FOO": "..."}`, `{"ERROR": "Template must contain a
+'class' field."}`). The k=20 prompt is **83,313 characters**, two-thirds of qwen2.5:3b's context window.
+Handed twice as much evidence, the model finds the right page more often and then abandons the output
+contract entirely.
+
+The oracle arm settles it: hand the model the *gold* pages and accuracy is **0.2360** — a **10× jump**.
+It can use this evidence. It cannot find the answer inside 83k characters *and* keep to the format. The
+bottleneck is neither the retriever nor the model's reasoning: it is how much context we pour into a 3B,
+and an output contract that collapses under it. A single "RAG accuracy" number would have sent you to
+buy a better embedding model, which the evidence says would not have moved the answer by one question.
 
 Reading all seven of those by hand: every one is a **JSON-envelope failure**. The retriever found the
 page; the model computed something; it answered in its own shape. The fix is a parser, not an index.

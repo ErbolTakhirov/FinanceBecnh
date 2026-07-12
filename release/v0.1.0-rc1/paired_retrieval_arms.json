@@ -1,0 +1,21 @@
+{
+  "run_a": "financebench-structured_financial_v1-retrieval_required-bm25-k10-scoped-ollama-qwen2.5-3b-411f70f5",
+  "run_b": "financebench-structured_financial_v1-retrieval_required-hybrid-k20-scoped-ollama-qwen2.5-3b-1c22b701",
+  "model_a": "ollama/qwen2.5:3b",
+  "model_b": "ollama/qwen2.5:3b",
+  "evaluator_fingerprint": "80ca8a678b1c4fa1",
+  "metric": "financebench_answer_accuracy",
+  "n_paired": 89,
+  "mean_a": 0.02247191011235955,
+  "mean_b": 0.02247191011235955,
+  "mean_difference": 0.0,
+  "ci_low": -0.033707865168539325,
+  "ci_high": 0.033707865168539325,
+  "significant": false,
+  "underpowered": false,
+  "a_right_b_wrong": 1,
+  "b_right_a_wrong": 1,
+  "both_right": 1,
+  "both_wrong": 86,
+  "verdict": "No significant difference between financebench-structured_financial_v1-retrieval_required-bm25-k10-scoped-ollama-qwen2.5-3b-411f70f5 and financebench-structured_financial_v1-retrieval_required-hybrid-k20-scoped-ollama-qwen2.5-3b-1c22b701 (difference +0.000, 95% CI [-0.034, +0.034] \u2014 includes zero)."
+}

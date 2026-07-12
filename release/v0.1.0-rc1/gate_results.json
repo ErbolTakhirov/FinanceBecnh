@@ -1,11 +1,11 @@
 {
   "version": "v0.1.0-rc1",
-  "evaluated_at": "2026-07-12T14:43:41.306529Z",
+  "evaluated_at": "2026-07-12T15:09:21.344892Z",
   "n_gates": 23,
-  "n_passed": 20,
-  "n_failed": 3,
+  "n_passed": 23,
+  "n_failed": 0,
   "n_not_applicable": 0,
-  "tagged": false,
+  "tagged": true,
   "gates": [
     {
       "name": "ruff format",
@@ -25,27 +25,27 @@
     {
       "name": "primary tests",
       "result": "PASS",
-      "detail": "1072 passed in 24.10s"
+      "detail": "1072 passed in 21.65s"
     },
     {
       "name": "security tests",
       "result": "PASS",
-      "detail": "411 passed in 1.08s"
+      "detail": "411 passed in 0.94s"
     },
     {
       "name": "parity tests",
       "result": "PASS",
-      "detail": "17 passed in 6.04s"
+      "detail": "17 passed in 5.21s"
     },
     {
       "name": "clean working tree",
-      "result": "FAIL",
-      "detail": "M src/financebench/cli.py"
+      "result": "PASS",
+      "detail": "clean"
     },
     {
       "name": "HEAD == origin/main",
       "result": "PASS",
-      "detail": "local d0fb39a5 vs remote d0fb39a5"
+      "detail": "local 111d6bc6 vs remote 111d6bc6"
     },
     {
       "name": "release manifest exists",
@@ -59,8 +59,8 @@
     },
     {
       "name": "release built from a clean commit",
-      "result": "FAIL",
-      "detail": "dirty tree \u2014 this release cannot be reproduced from its commit"
+      "result": "PASS",
+      "detail": "111d6bc67016"
     },
     {
       "name": "checksums exist",
@@ -80,7 +80,7 @@
     {
       "name": "one evaluator fingerprint across published runs",
       "result": "PASS",
-      "detail": "9 published run(s), 1 distinct fingerprint(s): ['80ca8a678b1c4fa1']"
+      "detail": "11 published run(s), 1 distinct fingerprint(s): ['80ca8a678b1c4fa1']"
     },
     {
       "name": "no mock run is published",
@@ -99,8 +99,8 @@
     },
     {
       "name": "retrieval ablation complete",
-      "result": "FAIL",
-      "detail": "18 cells, 1 generated arm(s)"
+      "result": "PASS",
+      "detail": "30 cells, 2 generated arm(s)"
     },
     {
       "name": "report generated",

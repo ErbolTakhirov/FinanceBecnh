@@ -5,7 +5,7 @@
 The first release candidate. Everything below was verified against real data and a real model, or is
 marked as not verified.
 
-### The two results
+### The three results
 
 **Giving qwen2.5:3b tools made it significantly worse.** Same 150 sample ids, direct vs
 tool-assisted: FinQA answer accuracy **0.147 → 0.027**, TAT-QA exact match **0.173 → 0.067**. Paired
@@ -16,11 +16,28 @@ And not because it used the tools badly: `tool_invocation_rate = 0.013` — it c
 150 questions**. The agent scaffolding degraded its arithmetic while it ignored the tools, and cost
 27% more tokens doing it. The sandbox was never breached (`tool_security_rejection = 1.000`).
 
-**Retrieval is not the bottleneck; the model is.** Fixing document scoping raised page recall
-**4.0% → 18.7%** (4.7×) and produced *no statistically supported* improvement in answer accuracy, while
-`generation_error_after_retrieval` rose 2 → 7. Reading those 7 by hand: every one is a **JSON-envelope
-failure**. The retriever found the page and the model answered in its own shape. The fix is a parser,
-not an index.
+**Doubling retrieval recall changed nothing, and broke the output contract.** Two generated arms on
+identical sample ids: bm25/doc-scoped/k=10 (18.7% page recall) and hybrid/doc-scoped/k=20 (**38.7%**).
+Answer accuracy: **0.0225 → 0.0225.** Paired bootstrap difference `+0.000`, 95% CI `[-0.034, +0.034]`.
+Retrieval improved 2.07×; not one more question was answered.
+
+And `generation_error_after_retrieval` **tripled: 7 → 22.** All 22 are the same failure — the model
+returns valid JSON in a shape nobody asked for (`{"FOO": "..."}`, `{"ERROR": "Template must contain a
+'class' field."}`). The k=20 prompt is **83,313 characters**, two-thirds of qwen2.5:3b's context window.
+Handed twice as much evidence, the model finds the right page more often and then abandons the output
+contract entirely.
+
+The oracle arm settles it: hand the model the *gold* pages and accuracy is **0.2360** — a **10× jump**.
+It can use this evidence. It cannot find the answer inside 83k characters *and* keep to the format. The
+bottleneck is neither the retriever nor the model's reasoning: it is how much context we pour into a 3B,
+and an output contract that collapses under it. A single "RAG accuracy" number would have sent you to
+buy a better embedding model, which the evidence says would not have moved the answer by one question.
+
+**The 7B works the tool protocol competently and gains nothing from it.** It invokes tools on 29 of
+150 questions (the 3B: 2), forms valid arguments 93% of the time, and uses the result 69% of the time.
+Every 7B direct-vs-tools interval contains zero. The two models fail *differently*, and that difference
+is the finding: the small one is destroyed by scaffolding it never uses; the larger one pays the
+scaffolding cost and breaks even.
 
 ### The bugs this release found — every one produced a plausible number
 
