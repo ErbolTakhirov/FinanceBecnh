@@ -727,6 +727,15 @@ def resume(
         )
         return
 
+    # The fingerprint BEFORE we overwrite the artifacts. If it differs from the one we are about to
+    # write, this resume is a MIGRATION, and a migration must record how it happened.
+    old_fingerprint = str(environment.get("evaluator_fingerprint", {}).get("digest", "unknown"))
+    # The hashes of the raw responses we already hold. If every one of them survives the resume, then
+    # no inference was re-run: the model said exactly what it said before, and only OUR code re-read
+    # it. That is the difference between a re-score and a new experiment, and it is the difference a
+    # reader needs in order to trust the migrated number.
+    old_hashes = _raw_response_hashes(out_dir)
+
     try:
         outcome = asyncio.run(run_eval(request, out_dir=out_dir))
     except ConfigError as exc:
@@ -738,6 +747,60 @@ def resume(
         f"[bold green]Resumed:[/bold green] {outcome.run_id} "
         f"(cache_hits={result.n_cache_hits}/{result.n_samples})"
     )
+
+    new_environment = json.loads((out_dir / "environment.json").read_text(encoding="utf-8"))
+    new_fingerprint = str(new_environment.get("evaluator_fingerprint", {}).get("digest", "unknown"))
+    if new_fingerprint != old_fingerprint:
+        new_hashes = _raw_response_hashes(out_dir)
+        preserved = bool(old_hashes) and old_hashes == new_hashes
+        record = {
+            "source_run_id": run_id,
+            "migration_type": "reparse_rescore" if preserved else "full_rerun",
+            "old_fingerprint": old_fingerprint,
+            "new_fingerprint": new_fingerprint,
+            "reason": (
+                "The evaluator changed; the model did not. Every raw response is byte-identical to "
+                "the one already on disk, so no inference was re-run — our code re-read what the "
+                "model had already said."
+                if preserved
+                else "At least one raw response differs from the one previously stored, so this run "
+                "made real model calls. It is a re-evaluation, not a re-score."
+            ),
+            "raw_response_hashes_preserved": preserved,
+            "n_samples": result.n_samples,
+            "n_cache_hits": result.n_cache_hits,
+            "migrated_at": RealClock().now_iso(),
+        }
+        (out_dir / "migration.json").write_text(
+            json.dumps(record, indent=2) + "\n", encoding="utf-8"
+        )
+        kind = "re-scored" if preserved else "RE-RAN INFERENCE"
+        console.print(
+            f"  [dim]migration recorded: {old_fingerprint} -> {new_fingerprint} ({kind})[/dim]"
+        )
+
+
+def _raw_response_hashes(run_dir: Path) -> dict[str, str]:
+    """``{sample_id: sha256(raw response text)}`` from a run's stored predictions.
+
+    This is what makes a migration auditable. "The fingerprint changed and the score moved" is not a
+    finding unless you can say whether the MODEL's output moved too — and the only way to say that is
+    to hash what it actually said, before and after.
+    """
+    import hashlib
+
+    path = run_dir / "predictions.jsonl"
+    if not path.is_file():
+        return {}
+    hashes: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        response = record.get("response") or {}
+        content = str(response.get("content", ""))
+        hashes[str(record["sample_id"])] = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    return hashes
 
 
 # --------------------------------------------------------------------------- compare / report
@@ -1302,6 +1365,38 @@ def _write_retrieval_report(
                 int(retrieval.get("top_k", 5)),
                 bool(retrieval.get("document_scoped", False)),
             )
+
+            # CONSISTENCY ASSERTION. Where run_config DOES record the arm, it must agree with what
+            # the pipeline says it ran. If the two disagree, we do not know which arm this run is,
+            # and a wrong attribution here does not look like an error — it looks like a result.
+            config_path = path / "run_config.json"
+            if config_path.is_file():
+                config = json.loads(config_path.read_text(encoding="utf-8"))
+                if config.get("retriever") is not None:
+                    declared = (
+                        str(config["retriever"]),
+                        int(config.get("top_k", 5)),
+                        bool(config.get("document_scoped", False)),
+                    )
+                    if declared != key:
+                        _fail(
+                            f"Refusing to build the ablation report: run {path.name} disagrees with "
+                            f"itself about which arm it is.\n"
+                            f"  run_config.json  says: {declared}\n"
+                            f"  capabilities.json says: {key}  (this is what the pipeline ACTUALLY ran)\n"
+                            "Attributing an answer score to the wrong arm of the ablation that exists "
+                            "to tell arms apart would not look like an error. It would look like a "
+                            "result."
+                        )
+                        return
+
+            if key in seen:
+                _fail(
+                    f"Refusing to build the ablation report: two runs claim the same arm {key}.\n"
+                    f"  {seen[key]}\n  {path.name}\n"
+                    "One of them would silently be dropped, and the report would not say which."
+                )
+                return
             seen[key] = path.name
 
     for cell in cells:
@@ -1760,14 +1855,6 @@ def release_build(
     console.print(f"  evaluator fingerprint: {payload['evaluator_fingerprint']['digest']}")
     console.print(f"  commit: {payload['repository_commit']}  dirty={payload['repository_dirty']}")
 
-    # Checksums over every artifact in the release directory.
-    lines = []
-    for path in sorted(out_dir.rglob("*")):
-        if path.is_file() and path.name != "checksums.txt":
-            lines.append(f"{sha256_file(path)}  {path.relative_to(out_dir)}")
-    (out_dir / "checksums.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    console.print(f"  checksums: {len(lines)} file(s)")
-
     console.print("\n[bold]Release gates[/bold]")
     gates = check_release_gates(out_dir, runs_dir=runs_dir)
     table = Table("Gate", "Result", "Detail")
@@ -1775,6 +1862,33 @@ def release_build(
         colour = {"PASS": "green", "FAIL": "red", "NOT APPLICABLE": "yellow"}[gate.label]
         table.add_row(gate.name, f"[{colour}]{gate.label}[/{colour}]", gate.detail[:60])
     console.print(table)
+
+    # Every gate, individually, as an artifact. A release that publishes only "all gates passed" is
+    # asking to be trusted; one that publishes each gate and its observed value can be checked.
+    (out_dir / "gate_results.json").write_text(
+        json.dumps(
+            {
+                "version": version,
+                "evaluated_at": RealClock().now_iso(),
+                "n_gates": len(gates),
+                "n_passed": sum(1 for g in gates if g.passed is True),
+                "n_failed": sum(1 for g in gates if g.passed is False),
+                "n_not_applicable": sum(1 for g in gates if g.passed is None),
+                "tagged": not any(g.passed is False for g in gates),
+                "gates": [
+                    {
+                        "name": g.name,
+                        "result": g.label.replace(" ", "_"),
+                        "detail": g.detail,
+                    }
+                    for g in gates
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     failed = [g for g in gates if g.passed is False]
     if failed:
@@ -1828,6 +1942,22 @@ def release_build(
             if gate.name in remedy:
                 blockers += ["**What clears it**", "", remedy[gate.name], ""]
         (out_dir / "BLOCKERS.md").write_text("\n".join(blockers) + "\n", encoding="utf-8")
+    elif (out_dir / "BLOCKERS.md").is_file():
+        # Every gate passes now. A stale BLOCKERS.md left lying in the release directory would be
+        # shipped alongside the artifacts, telling a reader the release is blocked when it is not.
+        (out_dir / "BLOCKERS.md").unlink()
+        console.print("  [dim]removed a stale BLOCKERS.md — every gate now passes[/dim]")
+
+    # Checksums LAST, so they cover gate_results.json and BLOCKERS.md too. A checksum file that
+    # omits the gate report is a checksum file that cannot prove which gates were run.
+    lines = []
+    for path in sorted(out_dir.rglob("*")):
+        if path.is_file() and path.name != "checksums.txt":
+            lines.append(f"{sha256_file(path)}  {path.relative_to(out_dir)}")
+    (out_dir / "checksums.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    console.print(f"\n  checksums: {len(lines)} file(s)")
+
+    if failed:
         console.print(
             f"\n[red]{len(failed)} gate(s) FAILED. Wrote {out_dir / 'BLOCKERS.md'}. "
             "The release is NOT tagged.[/red]"
