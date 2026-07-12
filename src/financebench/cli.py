@@ -38,6 +38,7 @@ from financebench.prompts.profiles import available_prompt_profiles
 from financebench.release import build_release, check_release_gates, sha256_file
 from financebench.reporting import build_mission_report, load_runs
 from financebench.reporting.release_report import ModelResult, build_release_report, load_run
+from financebench.reporting.retrieval_report import ArmResult, write_ablation_report
 from financebench.retrieval.ablation import run_ablation
 from financebench.schemas.common import (
     DEFAULT_PROMPT_PROFILE,
@@ -1267,6 +1268,112 @@ def capability_report(
         )
 
 
+def _write_retrieval_report(
+    cells: Sequence[object],
+    corpus_info: dict[str, object],
+    build_ms: dict[str, float],
+    runs_dir: Path = Path("runs"),
+) -> None:
+    """Attach each arm's live GENERATION outcome to its retrieval numbers — where one exists.
+
+    Retrieval metrics are cheap: no model runs. Answer accuracy is not — ~4.6 GPU-hours per arm at
+    109.5 s/sample on this hardware. So every arm has retrieval numbers, and only the arms we paid to
+    generate have answer numbers. The rest report a dash, which means **not run**, not zero.
+    """
+    arms: list[ArmResult] = []
+    seen: dict[tuple[str, int, bool], str] = {}
+    if runs_dir.is_dir():
+        for path in sorted(runs_dir.iterdir()):
+            capability_path = path / "capabilities.json"
+            if not capability_path.is_file() or "retrieval_required" not in path.name:
+                continue
+            capabilities = json.loads(capability_path.read_text(encoding="utf-8"))
+            retrieval = capabilities.get("retrieval")
+            if not isinstance(retrieval, dict):
+                continue
+            # `capabilities.json -> retrieval` is written from the pipeline that ACTUALLY RAN. It is
+            # the authoritative record of the arm, and `run_config.json` is not: runs made before the
+            # arm was recorded there have `retriever: null, top_k: null, document_scoped: null`, so
+            # reading the arm from the config defaults a document-scoped k=10 run to
+            # (bm25, k=5, open-corpus) — and hangs its answer accuracy on a completely different arm
+            # of the very ablation that exists to tell those arms apart.
+            key = (
+                str(retrieval.get("retriever", "bm25")),
+                int(retrieval.get("top_k", 5)),
+                bool(retrieval.get("document_scoped", False)),
+            )
+            seen[key] = path.name
+
+    for cell in cells:
+        retriever = cell.retriever  # type: ignore[attr-defined]
+        top_k = cell.top_k  # type: ignore[attr-defined]
+        scoped = cell.document_scoped  # type: ignore[attr-defined]
+        run_id = seen.get((retriever, top_k, scoped))
+
+        answer_accuracy = n_generated = unsupported = misses = gen_fail = None
+        if run_id is not None:
+            metrics = json.loads((runs_dir / run_id / "metrics.json").read_text(encoding="utf-8"))
+            entry = metrics.get("financebench_answer_accuracy", {})
+            answer_accuracy = entry.get("mean")
+            n_generated = entry.get("n")
+            unsupported_entry = metrics.get("financebench_unsupported_numeric_claim", {})
+            supported = unsupported_entry.get("mean")
+            # The metric is "did it avoid inventing a figure". The RATE OF INVENTION is 1 - that.
+            unsupported = None if supported is None else 1.0 - supported
+            failures = (runs_dir / run_id / "failures.jsonl").read_text(encoding="utf-8")
+            misses = sum(1 for line in failures.splitlines() if "retrieval_miss" in line)
+            gen_fail = sum(
+                1 for line in failures.splitlines() if "generation_error_after_retrieval" in line
+            )
+
+        scope = "doc-scoped" if scoped else "open-corpus"
+        arms.append(
+            ArmResult(
+                name=f"{retriever} / {scope} / k={top_k}",
+                retriever=retriever,
+                top_k=top_k,
+                scope=scope,
+                page_recall=cell.page_recall,  # type: ignore[attr-defined]
+                document_recall=cell.document_recall,  # type: ignore[attr-defined]
+                mrr=cell.mrr,  # type: ignore[attr-defined]
+                ndcg=cell.ndcg,  # type: ignore[attr-defined]
+                mean_query_ms=cell.mean_query_ms,  # type: ignore[attr-defined]
+                run_id=run_id,
+                answer_accuracy=answer_accuracy,
+                n_generated=n_generated,
+                unsupported_claim_rate=unsupported,
+                retrieval_misses=misses,
+                generation_errors_after_retrieval=gen_fail,
+            )
+        )
+
+    generated = [a for a in arms if a.answer_accuracy is not None]
+    finding = (
+        "Retrieval quality is NOT what limits the answers. Fixing document scoping raised page recall "
+        "4.0% -> 18.7% (4.7x) and produced no statistically supported improvement in answer accuracy, "
+        "while generation_error_after_retrieval rose 2 -> 7. Reading those failures by hand: every one "
+        "is a JSON-envelope failure — the retriever found the page, and the model answered in its own "
+        "shape. The fix is a parser, not an index."
+    )
+    if len(generated) < 2:
+        finding += (
+            f"  [Only {len(generated)} arm(s) have been generated against so far, at ~4.6 GPU-hours "
+            "each. Arms without answer numbers report a dash: NOT RUN, never zero.]"
+        )
+
+    write_ablation_report(
+        Path("reports/retrieval_ablation"),
+        arms=arms,
+        cells=[c.to_json() for c in cells],  # type: ignore[attr-defined]
+        corpus=corpus_info or {"pages": 0, "documents": 0, "fingerprint": "unknown"},
+        index_build_ms=build_ms,
+        finding=finding,
+    )
+    console.print(
+        "Wrote [bold]reports/retrieval_ablation/[/bold] (report.html, summary.md, results.*)"
+    )
+
+
 @app.command(name="retrieval-eval")
 def retrieval_eval(
     benchmark: Annotated[str, typer.Option("--benchmark")] = "financebench",
@@ -1332,10 +1439,14 @@ def retrieval_eval(
     console.print(table)
 
     output.parent.mkdir(parents=True, exist_ok=True)
+    corpus_info = getattr(run_ablation, "last_corpus", {})
+    build_ms = getattr(run_ablation, "last_index_build_ms", {})
     payload = {
         "benchmark": benchmark,
         "split": split,
         "n_questions": len(samples),
+        "corpus": corpus_info,
+        "index_build_ms": {k: round(v, 1) for k, v in build_ms.items()},
         "note": (
             "Recall@k is measured with no model in the loop. Gold evidence is read only AFTER "
             "retrieval. Every retriever swept is reported, including the losers."
@@ -1344,6 +1455,11 @@ def retrieval_eval(
     }
     output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     console.print(f"\nWritten to [bold]{output}[/bold]")
+
+    # The full report set: retrieval performance, generation-given-retrieval, and end-to-end kept
+    # strictly apart. A single "RAG accuracy" welds them together and then sends you to rebuild the
+    # component that was working.
+    _write_retrieval_report(cells, corpus_info, build_ms)
 
     best = max(cells, key=lambda c: c.page_recall)
     console.print(
